@@ -1,0 +1,45 @@
+# Flutter/Dart
+ung_dung_diem_danh/build/
+ung_dung_diem_danh/.dart_tool/
+ung_dung_diem_danh/.packages
+ung_dung_diem_danh/.pub-cache/
+ung_dung_diem_danh/.pub/
+ung_dung_diem_danh/pubspec.lock
+ung_dung_diem_danh/.flutter-plugins
+ung_dung_diem_danh/.flutter-plugins-dependencies
+ung_dung_diem_danh/.metadata
+ung_dung_diem_danh/ios/Flutter/Generated.xcconfig
+ung_dung_danh/ios/Flutter/flutter_export_environment.sh
+ung_dung_danh/android/app/debug
+ung_dung_danh/android/app/profile
+ung_dung_danh/android/app/release
+
+# .NET Core
+UngDungDiemDanhNhanVien/bin/
+UngDungDiemDanhNhanVien/obj/
+UngDungDiemDanhNhanVien/*.user
+UngDungDiemDanhNhanVien/*.suo
+UngDungDiemDanhNhanVien/*.cache
+UngDungDiemDanhNhanVien/*.log
+UngDungDiemDanhNhanVien/logs/
+UngDungDiemDanhNhanVien/appsettings.Development.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

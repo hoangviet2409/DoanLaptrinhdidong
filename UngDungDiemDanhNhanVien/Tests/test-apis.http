@@ -1,0 +1,232 @@
+### HƯỚNG DẪN: 
+### 1. Cài đặt extension "REST Client" trong VS Code
+### 2. Copy token từ response vào biến @token
+### 3. Click "Send Request" để test
+
+@baseUrl = http://localhost:5000/api
+@token = YOUR_TOKEN_HERE
+
+### ========================================
+### 1. TEST XÁC THỰC
+### ========================================
+
+### 1.1. Đăng nhập Admin
+POST {{baseUrl}}/XacThuc/dang-nhap-quan-tri
+Content-Type: application/json
+
+{
+  "tenDangNhap": "admin",
+  "matKhau": "admin123"
+}
+
+### 1.2. Đăng nhập Admin - SAI MẬT KHẨU
+POST {{baseUrl}}/XacThuc/dang-nhap-quan-tri
+Content-Type: application/json
+
+{
+  "tenDangNhap": "admin",
+  "matKhau": "sai_mat_khau"
+}
+
+### ========================================
+### 2. TEST QUẢN LÝ NHÂN VIÊN
+### ========================================
+
+### 2.1. Lấy danh sách nhân viên
+GET {{baseUrl}}/NhanVien
+Authorization: Bearer {{token}}
+
+### 2.2. Thêm nhân viên mới
+POST {{baseUrl}}/NhanVien
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "maNhanVien": "NV001",
+  "hoTen": "Nguyễn Văn A",
+  "email": "nguyenvana@congty.com",
+  "soDienThoai": "0912345678",
+  "phongBan": "Phòng Kỹ Thuật",
+  "chucVu": "Nhân viên",
+  "luongGio": 50000,
+  "trangThai": "HoatDong"
+}
+
+### 2.3. Thêm nhân viên thứ 2
+POST {{baseUrl}}/NhanVien
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "maNhanVien": "NV002",
+  "hoTen": "Trần Thị B",
+  "email": "tranthib@congty.com",
+  "soDienThoai": "0987654321",
+  "phongBan": "Phòng Kinh Doanh",
+  "chucVu": "Trưởng phòng",
+  "luongGio": 75000,
+  "trangThai": "HoatDong"
+}
+
+### 2.4. Lấy thông tin nhân viên theo ID
+GET {{baseUrl}}/NhanVien/1
+Authorization: Bearer {{token}}
+
+### 2.5. Lấy thông tin nhân viên theo Mã
+GET {{baseUrl}}/NhanVien/ma/NV001
+Authorization: Bearer {{token}}
+
+### 2.6. Đăng ký sinh trắc học cho nhân viên
+PUT {{baseUrl}}/NhanVien/1/dang-ky-sinh-trac-hoc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+"BIOMETRIC_HASH_12345"
+
+### 2.7. Đăng ký sinh trắc học cho nhân viên 2
+PUT {{baseUrl}}/NhanVien/2/dang-ky-sinh-trac-hoc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+"BIOMETRIC_HASH_67890"
+
+### 2.8. Cập nhật nhân viên
+PUT {{baseUrl}}/NhanVien/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "hoTen": "Nguyễn Văn A (Updated)",
+  "email": "nguyenvana@congty.com",
+  "soDienThoai": "0912345678",
+  "phongBan": "Phòng Kỹ Thuật",
+  "chucVu": "Trưởng nhóm",
+  "luongGio": 60000
+}
+
+### 2.9. Cập nhật trạng thái nhân viên (Tạm khóa)
+PUT {{baseUrl}}/NhanVien/1/trang-thai
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+"TamKhoa"
+
+### 2.10. Cập nhật trạng thái nhân viên (Hoạt động)
+PUT {{baseUrl}}/NhanVien/1/trang-thai
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+"HoatDong"
+
+### ========================================
+### 3. TEST ĐĂNG NHẬP NHÂN VIÊN
+### ========================================
+
+### 3.1. Đăng nhập nhân viên NV001
+POST {{baseUrl}}/XacThuc/dang-nhap-nhan-vien
+Content-Type: application/json
+
+{
+  "maNhanVien": "NV001",
+  "maSinhTracHoc": "BIOMETRIC_HASH_12345"
+}
+
+### 3.2. Xác thực sinh trắc học
+POST {{baseUrl}}/XacThuc/xac-thuc-sinh-trac-hoc
+Content-Type: application/json
+
+{
+  "maNhanVien": "NV001",
+  "maSinhTracHoc": "BIOMETRIC_HASH_12345"
+}
+
+### 3.3. Đăng nhập nhân viên - SAI MÃ SINH TRẮC HỌC
+POST {{baseUrl}}/XacThuc/dang-nhap-nhan-vien
+Content-Type: application/json
+
+{
+  "maNhanVien": "NV001",
+  "maSinhTracHoc": "SAI_BIOMETRIC"
+}
+
+### ========================================
+### 4. TEST ĐIỂM DANH
+### ========================================
+### Lưu ý: Cần dùng token của nhân viên từ bước 3.1
+
+@tokenNhanVien = YOUR_EMPLOYEE_TOKEN_HERE
+
+### 4.1. Điểm danh vào
+POST {{baseUrl}}/DiemDanh/diem-danh-vao
+Authorization: Bearer {{tokenNhanVien}}
+Content-Type: application/json
+
+{
+  "maNhanVien": "NV001",
+  "maSinhTracHoc": "BIOMETRIC_HASH_12345",
+  "viDo": 10.762622,
+  "kinhDo": 106.660172,
+  "ghiChu": "Điểm danh buổi sáng"
+}
+
+### 4.2. Điểm danh ra
+POST {{baseUrl}}/DiemDanh/diem-danh-ra
+Authorization: Bearer {{tokenNhanVien}}
+Content-Type: application/json
+
+{
+  "maNhanVien": "NV001",
+  "maSinhTracHoc": "BIOMETRIC_HASH_12345",
+  "viDo": 10.762622,
+  "kinhDo": 106.660172,
+  "ghiChu": "Điểm danh buổi chiều"
+}
+
+### 4.3. Xem lịch sử điểm danh cá nhân
+GET {{baseUrl}}/DiemDanh/lich-su-ca-nhan
+Authorization: Bearer {{tokenNhanVien}}
+
+### 4.4. Xem lịch sử điểm danh theo nhân viên (Admin)
+GET {{baseUrl}}/DiemDanh/lich-su/1
+Authorization: Bearer {{token}}
+
+### 4.5. Xem điểm danh theo ngày (Admin)
+GET {{baseUrl}}/DiemDanh/theo-ngay?ngay=2025-10-19
+Authorization: Bearer {{token}}
+
+### 4.6. Admin chấm công thủ công
+POST {{baseUrl}}/DiemDanh/diem-danh-thu-cong?nhanVienId=2&gioVao=2025-10-19T08:00:00&gioRa=2025-10-19T17:00:00
+Authorization: Bearer {{token}}
+
+### ========================================
+### 5. TEST ERROR CASES
+### ========================================
+
+### 5.1. Thử truy cập API không có token
+GET {{baseUrl}}/NhanVien
+
+### 5.2. Thử điểm danh vào 2 lần trong 1 ngày
+POST {{baseUrl}}/DiemDanh/diem-danh-vao
+Authorization: Bearer {{tokenNhanVien}}
+Content-Type: application/json
+
+{
+  "maNhanVien": "NV001",
+  "maSinhTracHoc": "BIOMETRIC_HASH_12345",
+  "viDo": 10.762622,
+  "kinhDo": 106.660172
+}
+
+### 5.3. Thử điểm danh ra khi chưa điểm danh vào
+POST {{baseUrl}}/DiemDanh/diem-danh-ra
+Authorization: Bearer {{tokenNhanVien}}
+Content-Type: application/json
+
+{
+  "maNhanVien": "NV002",
+  "maSinhTracHoc": "BIOMETRIC_HASH_67890",
+  "viDo": 10.762622,
+  "kinhDo": 106.660172
+}
+
+###

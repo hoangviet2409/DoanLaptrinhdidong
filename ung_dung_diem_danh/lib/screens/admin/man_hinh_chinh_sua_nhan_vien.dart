@@ -1,0 +1,395 @@
+import 'package:flutter/material.dart';
+import '../../config/theme.dart';
+import '../../models/nhan_vien_model.dart';
+import '../../services/nhan_vien_service.dart';
+import '../../services/api_service.dart';
+import '../../services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ManHinhChinhSuaNhanVien extends StatefulWidget {
+  final NhanVienModel nhanVien;
+
+  const ManHinhChinhSuaNhanVien({
+    super.key,
+    required this.nhanVien,
+  });
+
+  @override
+  State<ManHinhChinhSuaNhanVien> createState() => _ManHinhChinhSuaNhanVienState();
+}
+
+class _ManHinhChinhSuaNhanVienState extends State<ManHinhChinhSuaNhanVien> {
+  final _formKey = GlobalKey<FormState>();
+  final _maNhanVienController = TextEditingController();
+  final _hoTenController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _soDienThoaiController = TextEditingController();
+  final _phongBanController = TextEditingController();
+  final _chucVuController = TextEditingController();
+  final _luongGioController = TextEditingController();
+  final _maSinhTracHocController = TextEditingController();
+  final _maKhuonMatController = TextEditingController();
+
+  String _selectedTrangThai = 'HoatDong';
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeForm();
+  }
+
+  void _initializeForm() {
+    _maNhanVienController.text = widget.nhanVien.maNhanVien;
+    _hoTenController.text = widget.nhanVien.hoTen;
+    _emailController.text = widget.nhanVien.email;
+    _soDienThoaiController.text = widget.nhanVien.soDienThoai ?? '';
+    _phongBanController.text = widget.nhanVien.phongBan ?? '';
+    _chucVuController.text = widget.nhanVien.chucVu ?? '';
+    _luongGioController.text = widget.nhanVien.luongGio.toString();
+    _maSinhTracHocController.text = widget.nhanVien.maSinhTracHoc ?? '';
+    _maKhuonMatController.text = widget.nhanVien.maKhuonMat ?? '';
+    _selectedTrangThai = widget.nhanVien.trangThai;
+  }
+
+  @override
+  void dispose() {
+    _maNhanVienController.dispose();
+    _hoTenController.dispose();
+    _emailController.dispose();
+    _soDienThoaiController.dispose();
+    _phongBanController.dispose();
+    _chucVuController.dispose();
+    _luongGioController.dispose();
+    _maSinhTracHocController.dispose();
+    _maKhuonMatController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Chỉnh sửa: ${widget.nhanVien.hoTen}'),
+        backgroundColor: AppTheme.primaryColor,
+        foregroundColor: Colors.white,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.edit, color: AppTheme.primaryColor),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Chỉnh sửa thông tin nhân viên',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Cập nhật thông tin cho ${widget.nhanVien.hoTen}',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Form fields
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Mã nhân viên
+                      TextFormField(
+                        controller: _maNhanVienController,
+                        decoration: const InputDecoration(
+                          labelText: 'Mã Nhân Viên *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.badge),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Mã nhân viên là bắt buộc';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Họ tên
+                      TextFormField(
+                        controller: _hoTenController,
+                        decoration: const InputDecoration(
+                          labelText: 'Họ Tên *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.person),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Họ tên là bắt buộc';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Email
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'Email *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.email),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Email là bắt buộc';
+                          }
+                          if (!value.contains('@')) {
+                            return 'Email không hợp lệ';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Số điện thoại
+                      TextFormField(
+                        controller: _soDienThoaiController,
+                        decoration: const InputDecoration(
+                          labelText: 'Số Điện Thoại',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.phone),
+                        ),
+                        keyboardType: TextInputType.phone,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Phòng ban
+                      TextFormField(
+                        controller: _phongBanController,
+                        decoration: const InputDecoration(
+                          labelText: 'Phòng Ban',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.business),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Chức vụ
+                      TextFormField(
+                        controller: _chucVuController,
+                        decoration: const InputDecoration(
+                          labelText: 'Chức Vụ',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.work),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Lương giờ
+                      TextFormField(
+                        controller: _luongGioController,
+                        decoration: const InputDecoration(
+                          labelText: 'Lương Giờ (VNĐ) *',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.attach_money),
+                        ),
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Lương giờ là bắt buộc';
+                          }
+                          final luong = double.tryParse(value);
+                          if (luong == null || luong <= 0) {
+                            return 'Lương giờ phải là số dương';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Trạng thái
+                      DropdownButtonFormField<String>(
+                        value: _selectedTrangThai,
+                        decoration: const InputDecoration(
+                          labelText: 'Trạng Thái',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.toggle_on),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'HoatDong', child: Text('Hoạt Động')),
+                          DropdownMenuItem(value: 'TamKhoa', child: Text('Tạm Khóa')),
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedTrangThai = value!;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Mã sinh trắc học
+                      TextFormField(
+                        controller: _maSinhTracHocController,
+                        decoration: const InputDecoration(
+                          labelText: 'Mã Sinh Trắc Học',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.fingerprint),
+                          helperText: 'Mã vân tay hoặc sinh trắc học (tùy chọn)',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Mã khuôn mặt
+                      TextFormField(
+                        controller: _maKhuonMatController,
+                        decoration: const InputDecoration(
+                          labelText: 'Mã Khuôn Mặt',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.face),
+                          helperText: 'Mã nhận diện khuôn mặt (tùy chọn)',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+                      child: const Text('Hủy'),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _updateEmployee,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text('Cập nhật'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _updateEmployee() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final apiService = ApiService();
+      final authService = AuthService(apiService, prefs);
+      
+      final token = await authService.getCurrentToken();
+      if (token != null) {
+        apiService.setToken(token);
+      }
+
+      // Tạo object cập nhật với PascalCase để match với C# model
+      final updatedNhanVien = {
+        'Id': widget.nhanVien.id,
+        'MaNhanVien': _maNhanVienController.text.trim(),
+        'HoTen': _hoTenController.text.trim(),
+        'Email': _emailController.text.trim(),
+        'SoDienThoai': _soDienThoaiController.text.trim().isEmpty 
+            ? null 
+            : _soDienThoaiController.text.trim(),
+        'PhongBan': _phongBanController.text.trim().isEmpty 
+            ? null 
+            : _phongBanController.text.trim(),
+        'ChucVu': _chucVuController.text.trim().isEmpty 
+            ? null 
+            : _chucVuController.text.trim(),
+        'LuongGio': double.tryParse(_luongGioController.text.trim()) ?? 0.0,
+        'TrangThai': _selectedTrangThai,
+        'MaSinhTracHoc': _maSinhTracHocController.text.trim().isEmpty 
+            ? null 
+            : _maSinhTracHocController.text.trim(),
+        'MaKhuonMat': _maKhuonMatController.text.trim().isEmpty 
+            ? null 
+            : _maKhuonMatController.text.trim(),
+        'NgayTao': widget.nhanVien.ngayTao.toIso8601String(),
+        'NgayCapNhat': DateTime.now().toIso8601String(),
+      };
+
+      final response = await apiService.put(
+        '/NhanVien/${widget.nhanVien.id}',
+        data: updatedNhanVien,
+      );
+      
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Cập nhật nhân viên ${_hoTenController.text} thành công!'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+        Navigator.of(context).pop(true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Không thể cập nhật nhân viên'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Lỗi: ${e.toString()}'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+}
