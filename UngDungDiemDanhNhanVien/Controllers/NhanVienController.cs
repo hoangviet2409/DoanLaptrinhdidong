@@ -49,8 +49,20 @@ namespace UngDungDiemDanhNhanVien.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<NhanVien>> ThemNhanVien(NhanVien nhanVien)
         {
-            var nhanVienMoi = await _nhanVienService.ThemNhanVien(nhanVien);
-            return CreatedAtAction(nameof(LayNhanVienTheoId), new { id = nhanVienMoi.Id }, nhanVienMoi);
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var nhanVienMoi = await _nhanVienService.ThemNhanVien(nhanVien);
+                return CreatedAtAction(nameof(LayNhanVienTheoId), new { id = nhanVienMoi.Id }, nhanVienMoi);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Lỗi tạo nhân viên: {ex.Message}");
+            }
         }
 
         [HttpPut("{id}")]

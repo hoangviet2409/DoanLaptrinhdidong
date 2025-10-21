@@ -102,3 +102,4 @@ Hoàn thành tất cả tính năng nâng cao để có một hệ thống đi�
 **Ngày tạo:** $(Get-Date -Format "dd/MM/yyyy HH:mm")
 **Nhánh:** feature/phase-2-advanced-features
 **Trạng thái:** Đang phát triển
+

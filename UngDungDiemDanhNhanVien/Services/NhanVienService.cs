@@ -33,6 +33,12 @@ namespace UngDungDiemDanhNhanVien.Services
 
         public async Task<NhanVien> ThemNhanVien(NhanVien nhanVien)
         {
+            // Hash mật khẩu nếu có
+            if (!string.IsNullOrEmpty(nhanVien.MatKhauHash))
+            {
+                nhanVien.MatKhauHash = BCrypt.Net.BCrypt.HashPassword(nhanVien.MatKhauHash);
+            }
+            
             nhanVien.NgayTao = DateTime.Now;
             _context.NhanVien.Add(nhanVien);
             await _context.SaveChangesAsync();

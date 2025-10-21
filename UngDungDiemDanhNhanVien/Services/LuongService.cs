@@ -48,12 +48,19 @@ namespace UngDungDiemDanhNhanVien.Services
 
             _context.Luong.Add(luong);
             await _context.SaveChangesAsync();
+            
+            // Load NhanVien for the returned Luong
+            await _context.Entry(luong)
+                .Reference(l => l.NhanVien)
+                .LoadAsync();
+                
             return luong;
         }
 
         public async Task<IEnumerable<Luong>> LayLichSuLuong(int nhanVienId)
         {
             return await _context.Luong
+                .Include(l => l.NhanVien)
                 .Where(l => l.NhanVienId == nhanVienId)
                 .OrderByDescending(l => l.NgayTao)
                 .ToListAsync();
@@ -69,6 +76,12 @@ namespace UngDungDiemDanhNhanVien.Services
             luong.TongCong = luong.TongTien + thuong - truLuong;
 
             await _context.SaveChangesAsync();
+            
+            // Load NhanVien for the returned Luong
+            await _context.Entry(luong)
+                .Reference(l => l.NhanVien)
+                .LoadAsync();
+                
             return luong;
         }
 

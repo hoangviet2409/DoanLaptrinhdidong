@@ -48,50 +48,70 @@ namespace UngDungDiemDanhNhanVien.Services
 
         public async Task<DangNhapResponse> DangNhapNhanVien(DangNhapNhanVienRequest request)
         {
-            var nhanVien = await _context.NhanVien
-                .FirstOrDefaultAsync(n => n.MaNhanVien == request.MaNhanVien);
+            try
+            {
+                if (string.IsNullOrEmpty(request.MaNhanVien))
+                {
+                    return new DangNhapResponse
+                    {
+                        ThanhCong = false,
+                        ThongBao = "Mã nhân viên không được để trống"
+                    };
+                }
 
-            if (nhanVien == null)
+                var nhanVien = await _context.NhanVien
+                    .FirstOrDefaultAsync(n => n.MaNhanVien == request.MaNhanVien);
+
+                if (nhanVien == null)
+                {
+                    return new DangNhapResponse
+                    {
+                        ThanhCong = false,
+                        ThongBao = "Mã nhân viên không tồn tại"
+                    };
+                }
+
+                // Kiểm tra mật khẩu nếu có
+                if (!string.IsNullOrEmpty(request.MatKhau) && 
+                    (string.IsNullOrEmpty(nhanVien.MatKhauHash) || 
+                     !BCrypt.Net.BCrypt.Verify(request.MatKhau, nhanVien.MatKhauHash)))
+                {
+                    return new DangNhapResponse
+                    {
+                        ThanhCong = false,
+                        ThongBao = "Mã nhân viên hoặc mật khẩu không đúng"
+                    };
+                }
+
+                if (nhanVien.TrangThai != "HoatDong")
+                {
+                    return new DangNhapResponse
+                    {
+                        ThanhCong = false,
+                        ThongBao = "Tài khoản nhân viên đã bị khóa"
+                    };
+                }
+
+                var token = TaoJwtToken(nhanVien.Id.ToString(), "NhanVien", nhanVien.HoTen, nhanVien.MaNhanVien);
+
+                return new DangNhapResponse
+                {
+                    ThanhCong = true,
+                    ThongBao = "Đăng nhập thành công",
+                    Token = token,
+                    VaiTro = "NhanVien",
+                    NhanVienId = nhanVien.Id,
+                    HoTen = nhanVien.HoTen
+                };
+            }
+            catch (Exception ex)
             {
                 return new DangNhapResponse
                 {
                     ThanhCong = false,
-                    ThongBao = "Mã nhân viên không tồn tại"
+                    ThongBao = $"Lỗi đăng nhập: {ex.Message}"
                 };
             }
-
-            // Kiểm tra mật khẩu nếu có
-            if (!string.IsNullOrEmpty(request.MatKhau) && 
-                (string.IsNullOrEmpty(nhanVien.MatKhauHash) || 
-                 !BCrypt.Net.BCrypt.Verify(request.MatKhau, nhanVien.MatKhauHash)))
-            {
-                return new DangNhapResponse
-                {
-                    ThanhCong = false,
-                    ThongBao = "Mã nhân viên hoặc mật khẩu không đúng"
-                };
-            }
-
-            if (nhanVien.TrangThai != "HoatDong")
-            {
-                return new DangNhapResponse
-                {
-                    ThanhCong = false,
-                    ThongBao = "Tài khoản nhân viên đã bị khóa"
-                };
-            }
-
-            var token = TaoJwtToken(nhanVien.Id.ToString(), "NhanVien", nhanVien.HoTen, nhanVien.MaNhanVien);
-
-            return new DangNhapResponse
-            {
-                ThanhCong = true,
-                ThongBao = "Đăng nhập thành công",
-                Token = token,
-                VaiTro = "NhanVien",
-                NhanVienId = nhanVien.Id,
-                HoTen = nhanVien.HoTen
-            };
         }
 
         public async Task<DangNhapResponse> XacThucSinhTracHoc(DangNhapNhanVienRequest request)

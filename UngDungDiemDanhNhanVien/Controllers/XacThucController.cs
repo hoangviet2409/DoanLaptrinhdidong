@@ -26,8 +26,24 @@ namespace UngDungDiemDanhNhanVien.Controllers
         [HttpPost("dang-nhap-nhan-vien")]
         public async Task<ActionResult<DangNhapResponse>> DangNhapNhanVien(DangNhapNhanVienRequest request)
         {
-            var result = await _xacThucService.DangNhapNhanVien(request);
-            return Ok(result);
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                var result = await _xacThucService.DangNhapNhanVien(request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new DangNhapResponse
+                {
+                    ThanhCong = false,
+                    ThongBao = $"Lỗi server: {ex.Message}"
+                });
+            }
         }
 
         [HttpPost("xac-thuc-sinh-trac-hoc")]
