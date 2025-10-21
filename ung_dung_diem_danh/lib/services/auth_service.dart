@@ -49,10 +49,15 @@ class AuthService {
   // Đăng nhập Nhân viên
   Future<UserModel> dangNhapNhanVien(DangNhapNhanVienRequest request) async {
     try {
+      print('Login employee request: ${request.toJson()}');
+      print('Login endpoint: ${AppConstants.loginEmployeeEndpoint}');
+      
       final response = await _apiService.post(
         AppConstants.loginEmployeeEndpoint,
         data: request.toJson(),
       );
+      
+      print('Login response: ${response.data}');
 
       final dangNhapResponse = DangNhapResponse.fromJson(response.data);
 

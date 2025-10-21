@@ -16,6 +16,21 @@ class AppConstants {
   static const String attendanceCheckOutEndpoint = '/DiemDanh/diem-danh-ra';
   static const String attendanceHistoryEndpoint = '/DiemDanh/lich-su-ca-nhan';
   
+  // Report Endpoints
+  static const String reportWeekEndpoint = '/BaoCao/tuan';
+  static const String reportMonthEndpoint = '/BaoCao/thang';
+  static const String reportQuarterEndpoint = '/BaoCao/quy';
+  static const String reportYearEndpoint = '/BaoCao/nam';
+  static const String reportPersonalWeekEndpoint = '/BaoCao/ca-nhan/tuan';
+  static const String reportSendEmailEndpoint = '/BaoCao/gui-email';
+  
+  // Salary Endpoints
+  static const String salaryCalculateEndpoint = '/Luong/tinh-luong';
+  static const String salaryHistoryEndpoint = '/Luong/lich-su';
+  static const String salaryPersonalHistoryEndpoint = '/Luong/lich-su-ca-nhan';
+  static const String salaryUpdateEndpoint = '/Luong';
+  static const String salaryCreateMonthlyEndpoint = '/Luong/tao-bang-luong-thang';
+  
   // Storage Keys
   static const String tokenKey = 'auth_token';
   static const String userRoleKey = 'user_role';
