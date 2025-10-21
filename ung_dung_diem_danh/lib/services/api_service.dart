@@ -67,6 +67,10 @@ class ApiService {
       final response = await _dio.get(path, queryParameters: queryParameters);
       return response;
     } on DioException catch (e) {
+      // Allow callers to handle 404 (e.g., treat as "no data")
+      if (e.response?.statusCode == 404 && e.response != null) {
+        return e.response!;
+      }
       throw _handleError(e);
     }
   }

@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import '../../blocs/auth/auth_bloc.dart';
-import '../../blocs/auth/auth_event.dart';
-import '../../blocs/auth/auth_state.dart';
 import '../../config/theme.dart';
-import '../../models/dang_ky_request_unified.dart';
+import '../../models/dang_ky_request.dart';
 import '../../services/admin_service.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
@@ -333,10 +328,12 @@ class _ManHinhTaoNhanVienState extends State<ManHinhTaoNhanVien> {
       final authService = AuthService(apiService, prefs);
       final adminService = AdminService(apiService, authService);
 
-      final request = DangKyRequest(
-        vaiTro: 'NhanVien',
-        email: _emailController.text.trim(),
+      final request = DangKyNhanVienRequest(
         maNhanVien: _maNhanVienController.text.trim(),
+        tenDangNhap: _maNhanVienController.text.trim(), // Sử dụng mã NV làm username
+        matKhau: _matKhauController.text.trim(),
+        email: _emailController.text.trim(),
+        luongGio: double.tryParse(_luongGioController.text.trim()) ?? 0.0,
         hoTen: _hoTenController.text.trim(),
         soDienThoai: _soDienThoaiController.text.trim().isEmpty 
             ? null 
@@ -347,15 +344,6 @@ class _ManHinhTaoNhanVienState extends State<ManHinhTaoNhanVien> {
         chucVu: _chucVuController.text.trim().isEmpty 
             ? null 
             : _chucVuController.text.trim(),
-        luongGio: double.tryParse(_luongGioController.text.trim()) ?? 0.0,
-        trangThai: _selectedTrangThai,
-        maSinhTracHoc: _maSinhTracHocController.text.trim().isEmpty 
-            ? null 
-            : _maSinhTracHocController.text.trim(),
-        maKhuonMat: _maKhuonMatController.text.trim().isEmpty 
-            ? null 
-            : _maKhuonMatController.text.trim(),
-        matKhauNhanVien: _matKhauController.text.trim(),
       );
 
       final response = await adminService.taoTaiKhoanNhanVien(request);

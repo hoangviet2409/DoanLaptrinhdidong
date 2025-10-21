@@ -2,7 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/constants.dart';
 import '../models/dang_nhap_request.dart';
 import '../models/dang_nhap_response.dart';
-import '../models/dang_ky_request_unified.dart';
+import '../models/dang_ky_request.dart';
 import '../models/dang_ky_response.dart';
 import '../models/user_model.dart';
 import 'api_service.dart';
@@ -202,6 +202,34 @@ class AuthService {
   // Lấy token hiện tại
   Future<String?> getCurrentToken() async {
     return _prefs.getString(AppConstants.tokenKey);
+  }
+
+  // Đăng ký Nhân viên
+  Future<UserModel> dangKyNhanVien(DangKyNhanVienRequest request) async {
+    try {
+      final response = await _apiService.post(
+        AppConstants.registerEndpoint,
+        data: request.toJson(),
+      );
+
+      final dangKyResponse = DangKyResponse.fromJson(response.data);
+
+      if (!dangKyResponse.thanhCong || dangKyResponse.token == null) {
+        throw Exception(dangKyResponse.thongBao);
+      }
+
+      final user = UserModel(
+        token: dangKyResponse.token!,
+        vaiTro: dangKyResponse.vaiTro!,
+        hoTen: dangKyResponse.hoTen ?? '',
+        nhanVienId: dangKyResponse.id ?? 0,
+      );
+
+      await _saveUserInfo(user);
+      return user;
+    } catch (e) {
+      throw Exception('Lỗi đăng ký nhân viên: ${e.toString()}');
+    }
   }
 }
 

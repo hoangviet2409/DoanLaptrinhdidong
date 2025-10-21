@@ -12,6 +12,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginEmployeeRequested>(_onLoginEmployee);
     on<BiometricAuthRequested>(_onBiometricAuth);
     on<RegisterAdminRequested>(_onRegisterAdmin);
+    on<RegisterEmployeeRequested>(_onRegisterEmployee);
     on<LogoutRequested>(_onLogout);
   }
 
@@ -89,6 +90,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       final user = await _authService.dangKyAdmin(event.request);
+      emit(AuthAuthenticated(user));
+    } catch (e) {
+      emit(AuthError(e.toString()));
+      emit(AuthUnauthenticated());
+    }
+  }
+
+  Future<void> _onRegisterEmployee(
+    RegisterEmployeeRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    try {
+      final user = await _authService.dangKyNhanVien(event.request);
       emit(AuthAuthenticated(user));
     } catch (e) {
       emit(AuthError(e.toString()));

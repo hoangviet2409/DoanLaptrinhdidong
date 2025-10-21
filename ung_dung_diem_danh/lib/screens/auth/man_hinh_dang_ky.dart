@@ -35,6 +35,7 @@ class _ManHinhDangKyState extends State<ManHinhDangKy> with SingleTickerProvider
   final _employeeChucVuController = TextEditingController();
   final _employeeLuongController = TextEditingController();
   final _employeeBiometricController = TextEditingController();
+  final _employeePasswordController = TextEditingController();
   
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -60,6 +61,7 @@ class _ManHinhDangKyState extends State<ManHinhDangKy> with SingleTickerProvider
     _employeeChucVuController.dispose();
     _employeeLuongController.dispose();
     _employeeBiometricController.dispose();
+    _employeePasswordController.dispose();
     super.dispose();
   }
 
@@ -479,9 +481,9 @@ class _ManHinhDangKyState extends State<ManHinhDangKy> with SingleTickerProvider
       final request = DangKyAdminRequest(
         tenDangNhap: _adminUsernameController.text.trim(),
         matKhau: _adminPasswordController.text,
-        xacNhanMatKhau: _adminConfirmPasswordController.text,
         email: _adminEmailController.text.trim(),
-        vaiTro: _adminRole,
+        hoTen: _adminUsernameController.text.trim(), // Sử dụng username làm họ tên
+        soDienThoai: null,
       );
       context.read<AuthBloc>().add(RegisterAdminRequested(request));
     }
@@ -491,8 +493,11 @@ class _ManHinhDangKyState extends State<ManHinhDangKy> with SingleTickerProvider
     if (_employeeFormKey.currentState!.validate()) {
       final request = DangKyNhanVienRequest(
         maNhanVien: _employeeMaNhanVienController.text.trim(),
-        hoTen: _employeeHoTenController.text.trim(),
+        tenDangNhap: _employeeMaNhanVienController.text.trim(), // Sử dụng mã NV làm username
+        matKhau: _employeePasswordController.text,
         email: _employeeEmailController.text.trim(),
+        luongGio: double.parse(_employeeLuongController.text),
+        hoTen: _employeeHoTenController.text.trim(),
         soDienThoai: _employeePhoneController.text.trim().isEmpty 
             ? null 
             : _employeePhoneController.text.trim(),
@@ -502,10 +507,6 @@ class _ManHinhDangKyState extends State<ManHinhDangKy> with SingleTickerProvider
         chucVu: _employeeChucVuController.text.trim().isEmpty 
             ? null 
             : _employeeChucVuController.text.trim(),
-        luongGio: double.parse(_employeeLuongController.text),
-        maSinhTracHoc: _employeeBiometricController.text.trim().isEmpty 
-            ? null 
-            : _employeeBiometricController.text.trim(),
       );
       context.read<AuthBloc>().add(RegisterEmployeeRequested(request));
     }

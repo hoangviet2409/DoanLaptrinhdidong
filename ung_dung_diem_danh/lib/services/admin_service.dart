@@ -1,5 +1,5 @@
 import '../config/constants.dart';
-import '../models/dang_ky_request_unified.dart';
+import '../models/dang_ky_request.dart';
 import '../models/dang_ky_response.dart';
 import 'api_service.dart';
 import 'auth_service.dart';

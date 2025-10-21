@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../models/dang_nhap_request.dart';
-import '../../models/dang_ky_request_unified.dart';
+import '../../models/dang_ky_request.dart';
 
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
@@ -43,6 +43,15 @@ class RegisterAdminRequested extends AuthEvent {
   final DangKyRequest request;
 
   const RegisterAdminRequested(this.request);
+
+  @override
+  List<Object?> get props => [request];
+}
+
+class RegisterEmployeeRequested extends AuthEvent {
+  final DangKyNhanVienRequest request;
+
+  const RegisterEmployeeRequested(this.request);
 
   @override
   List<Object?> get props => [request];

@@ -9,6 +9,7 @@ class AppConstants {
   
   // Registration Endpoints
   static const String registerAdminEndpoint = '/XacThuc/dang-ky-admin'; // Admin only
+  static const String registerEndpoint = '/XacThuc/dang-ky'; // Public registration
   
   static const String employeesEndpoint = '/NhanVien';
   static const String attendanceCheckInEndpoint = '/DiemDanh/diem-danh-vao';
@@ -24,7 +25,7 @@ class AppConstants {
   static const String maNhanVienKey = 'ma_nhan_vien';
   
   // App Settings
-  static const int requestTimeout = 30000; // 30 seconds
+  static const int requestTimeout = 60000; // 60 seconds
   
   // User Roles
   static const String roleAdmin = 'Admin';

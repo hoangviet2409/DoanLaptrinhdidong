@@ -1,17 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import '../../blocs/auth/auth_bloc.dart';
-import '../../blocs/auth/auth_event.dart';
-import '../../blocs/auth/auth_state.dart';
 import '../../config/theme.dart';
-import '../../models/dang_ky_request_unified.dart';
-import '../../services/admin_service.dart';
-import '../../services/api_service.dart';
-import '../../services/auth_service.dart';
 import 'man_hinh_quan_ly_user.dart';
 import 'man_hinh_tao_nhan_vien.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class ManHinhTaoTaiKhoan extends StatefulWidget {
   const ManHinhTaoTaiKhoan({super.key});
@@ -22,19 +12,9 @@ class ManHinhTaoTaiKhoan extends StatefulWidget {
 
 class _ManHinhTaoTaiKhoanState extends State<ManHinhTaoTaiKhoan> {
   String _selectedAccountType = 'NhanVien';
-  late AdminService _adminService;
-
   @override
   void initState() {
     super.initState();
-    _initServices();
-  }
-
-  void _initServices() async {
-    final prefs = await SharedPreferences.getInstance();
-    final apiService = ApiService();
-    final authService = AuthService(apiService, prefs);
-    _adminService = AdminService(apiService, authService);
   }
 
   @override

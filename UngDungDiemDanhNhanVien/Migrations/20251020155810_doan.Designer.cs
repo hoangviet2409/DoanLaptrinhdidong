@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UngDungDiemDanhNhanVien.Data;
 
@@ -11,9 +12,11 @@ using UngDungDiemDanhNhanVien.Data;
 namespace UngDungDiemDanhNhanVien.Migrations
 {
     [DbContext(typeof(UngDungDiemDanhContext))]
-    partial class UngDungDiemDanhContextModelSnapshot : ModelSnapshot
+    [Migration("20251020155810_doan")]
+    partial class doan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -300,8 +303,8 @@ namespace UngDungDiemDanhNhanVien.Migrations
                         {
                             Id = 1,
                             Email = "admin@congty.com",
-                            MatKhauHash = "$2a$11$4Osk/0J.9pdUQgk3yrwz7uOzgoHFQRa0yTae6VaFFFlWoqMmX0GQO",
-                            NgayTao = new DateTime(2025, 10, 20, 23, 5, 32, 50, DateTimeKind.Local).AddTicks(8756),
+                            MatKhauHash = "$2a$11$PbUxXtWDWIrPxxw7QIygTOZRIUP8PB./jmotvlWmua6G3RQLOfHG2",
+                            NgayTao = new DateTime(2025, 10, 20, 22, 58, 8, 956, DateTimeKind.Local).AddTicks(1618),
                             TenDangNhap = "admin",
                             VaiTro = "Admin"
                         });

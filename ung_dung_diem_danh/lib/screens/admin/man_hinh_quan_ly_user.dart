@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import '../../models/dang_ky_request_unified.dart';
-import '../../models/dang_ky_response.dart';
+import '../../models/dang_ky_request.dart';
 import '../../services/admin_service.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
-import '../../blocs/auth/auth_bloc.dart';
-import '../../blocs/auth/auth_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/theme.dart';
 
