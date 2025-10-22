@@ -30,6 +30,7 @@ class _ManHinhLichSuDiemDanhState extends State<ManHinhLichSuDiemDanh> {
   }
 
   Future<void> _loadLichSuDiemDanh() async {
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -54,19 +55,23 @@ class _ManHinhLichSuDiemDanhState extends State<ManHinhLichSuDiemDanh> {
       );
       
       if (response.thanhCong) {
+        if (!mounted) return;
         setState(() {
           _lichSuDiemDanh = response.danhSachDiemDanh;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _errorMessage = response.thongBao;
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = e.toString();
       });
     } finally {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });

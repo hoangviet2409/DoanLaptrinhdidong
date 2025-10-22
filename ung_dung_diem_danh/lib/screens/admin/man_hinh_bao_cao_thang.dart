@@ -72,12 +72,66 @@ class _ManHinhBaoCaoThangState extends State<ManHinhBaoCaoThang> {
     );
   }
 
+  Future<void> _guiEmailBaoCao() async {
+    if (_reportResult == null || (_reportResult!.danhSachDiemDanh?.isEmpty ?? true)) {
+      _showSnackBar('Vui lòng lấy báo cáo trước khi gửi email!', isError: true);
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Gửi Email Báo Cáo'),
+        content: Text('Gửi báo cáo tháng $_selectedMonth/$_selectedYear qua email cho tất cả nhân viên?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+            child: const Text('Gửi Email'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => _isLoading = true);
+      try {
+        int successCount = 0;
+        for (var diemDanh in _reportResult!.danhSachDiemDanh ?? []) {
+          try {
+            await _baoCaoService.guiEmailBaoCao(diemDanh.nhanVienId, 'Thang');
+            successCount++;
+          } catch (e) {
+            print('Lỗi gửi email cho NV ${diemDanh.maNhanVien}: $e');
+          }
+        }
+        _showSnackBar('Đã gửi email thành công cho $successCount nhân viên!', isError: false);
+      } catch (e) {
+        _showSnackBar('Lỗi: ${e.toString()}', isError: true);
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Báo Cáo Tháng'),
         backgroundColor: Colors.green,
+        actions: [
+          if (_reportResult != null && (_reportResult!.danhSachDiemDanh?.isNotEmpty ?? false))
+            IconButton(
+              icon: const Icon(Icons.email),
+              tooltip: 'Gửi Email',
+              onPressed: _guiEmailBaoCao,
+            ),
+        ],
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(

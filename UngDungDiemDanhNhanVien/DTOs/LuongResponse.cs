@@ -41,6 +41,8 @@ namespace UngDungDiemDanhNhanVien.DTOs
     {
         public decimal Thuong { get; set; }
         public decimal TruLuong { get; set; }
+        public string? TrangThai { get; set; }
+        public string? GhiChu { get; set; }
     }
 
     public class TaoBangLuongRequest

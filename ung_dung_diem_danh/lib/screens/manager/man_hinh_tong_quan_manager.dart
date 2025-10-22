@@ -3,9 +3,72 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../config/theme.dart';
+import '../../services/api_service.dart';
+import '../../services/nhan_vien_service.dart';
+import '../../models/nhan_vien_model.dart';
 
-class ManHinhTongQuanManager extends StatelessWidget {
-  const ManHinhTongQuanManager({super.key});
+class ManHinhTongQuanManager extends StatefulWidget {
+  final Function(int)? onTabChange;
+  
+  const ManHinhTongQuanManager({
+    super.key,
+    this.onTabChange,
+  });
+
+  @override
+  State<ManHinhTongQuanManager> createState() => _ManHinhTongQuanManagerState();
+}
+
+class _ManHinhTongQuanManagerState extends State<ManHinhTongQuanManager> {
+  late NhanVienService _nhanVienService;
+  List<NhanVienModel> _danhSachNhanVien = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initServices();
+  }
+
+  Future<void> _initServices() async {
+    final apiService = ApiService();
+    _nhanVienService = NhanVienService(apiService);
+    
+    await _loadData();
+  }
+
+  Future<void> _loadData() async {
+    if (!mounted) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final danhSach = await _nhanVienService.layDanhSachNhanVien();
+      if (!mounted) return;
+      
+      setState(() {
+        _danhSachNhanVien = danhSach;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi khi tải dữ liệu: $e')),
+        );
+      }
+    }
+  }
+
+  int get _tongNhanVien => _danhSachNhanVien.length;
+  int get _nhanVienHoatDong => _danhSachNhanVien.where((nv) => nv.trangThai == 'HoatDong').length;
+  int get _nhanVienTamKhoa => _danhSachNhanVien.where((nv) => nv.trangThai != 'HoatDong').length;
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +81,21 @@ class ManHinhTongQuanManager extends StatelessWidget {
             title: const Text('Tổng Quan Quản Lý'),
             backgroundColor: AppTheme.primaryColor,
             foregroundColor: Colors.white,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: _loadData,
+              ),
+            ],
           ),
           body: user == null
               ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
+              : _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : RefreshIndicator(
+                      onRefresh: _loadData,
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,55 +144,55 @@ class ManHinhTongQuanManager extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
 
-                      // Thống kê nhanh
-                      const Text(
-                        'Thống Kê Hôm Nay',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              'Tổng Nhân Viên',
-                              '0',
-                              Icons.people,
-                              AppTheme.primaryColor,
+                        // Thống kê nhanh
+                        const Text(
+                          'Thống Kê Phòng Ban',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatCard(
+                                'Tổng Nhân Viên',
+                                _tongNhanVien.toString(),
+                                Icons.people,
+                                AppTheme.primaryColor,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildStatCard(
-                              'Có Mặt',
-                              '0',
-                              Icons.check_circle,
-                              Colors.green,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildStatCard(
+                                'Hoạt Động',
+                                _nhanVienHoatDong.toString(),
+                                Icons.check_circle,
+                                Colors.green,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildStatCard(
-                              'Đi Muộn',
-                              '0',
-                              Icons.schedule,
-                              Colors.orange,
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatCard(
+                                'Tạm Khóa',
+                                _nhanVienTamKhoa.toString(),
+                                Icons.block,
+                                Colors.orange,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: _buildStatCard(
-                              'Vắng Mặt',
-                              '0',
-                              Icons.cancel,
-                              Colors.red,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: _buildStatCard(
+                                'Phòng Ban',
+                                _layDanhSachPhongBan().length.toString(),
+                                Icons.business,
+                                Colors.blue,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                       const SizedBox(height: 20),
 
                       // Chức năng chính
@@ -127,38 +201,114 @@ class ManHinhTongQuanManager extends StatelessWidget {
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 12),
-                      _buildMenuItem(
-                        context,
-                        icon: Icons.people,
-                        title: 'Quản Lý Nhân Viên',
-                        subtitle: 'Xem và quản lý nhân viên phòng ban',
-                        onTap: () {
-                          // Navigate to employee management
-                        },
-                      ),
-                      _buildMenuItem(
-                        context,
-                        icon: Icons.analytics,
-                        title: 'Báo Cáo Phòng Ban',
-                        subtitle: 'Xem thống kê và báo cáo',
-                        onTap: () {
-                          // Navigate to reports
-                        },
-                      ),
-                      _buildMenuItem(
-                        context,
-                        icon: Icons.access_time,
-                        title: 'Chấm Công',
-                        subtitle: 'Theo dõi chấm công nhân viên',
-                        onTap: () {
-                          // Navigate to attendance
-                        },
-                      ),
-                    ],
+                        _buildMenuItem(
+                          context,
+                          icon: Icons.people,
+                          title: 'Quản Lý Nhân Viên',
+                          subtitle: 'Xem và quản lý $_tongNhanVien nhân viên',
+                          onTap: () {
+                            // Switch to tab 1 (Employee Management)
+                            widget.onTabChange?.call(1);
+                          },
+                        ),
+                        _buildMenuItem(
+                          context,
+                          icon: Icons.analytics,
+                          title: 'Báo Cáo Phòng Ban',
+                          subtitle: 'Xem thống kê và báo cáo chấm công',
+                          onTap: () {
+                            // Switch to tab 2 (Reports)
+                            widget.onTabChange?.call(2);
+                          },
+                        ),
+                        _buildMenuItem(
+                          context,
+                          icon: Icons.business,
+                          title: 'Thông Tin Phòng Ban',
+                          subtitle: 'Xem thông tin và phân bổ nhân sự',
+                          onTap: () {
+                            _showPhongBanInfo(context);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                      ),
         );
       },
+    );
+  }
+
+  List<String> _layDanhSachPhongBan() {
+    final phongBans = <String>{};
+    for (var nv in _danhSachNhanVien) {
+      if (nv.phongBan != null && nv.phongBan!.isNotEmpty) {
+        phongBans.add(nv.phongBan!);
+      }
+    }
+    return phongBans.toList();
+  }
+
+  void _showPhongBanInfo(BuildContext context) {
+    final phongBans = _layDanhSachPhongBan();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.business, color: AppTheme.primaryColor),
+            const SizedBox(width: 8),
+            const Text('Thông Tin Phòng Ban'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (phongBans.isEmpty)
+                const Text(
+                  'Chưa có phân chia phòng ban',
+                  style: TextStyle(color: Colors.grey),
+                )
+              else
+                ...phongBans.map((phongBan) {
+                  final soNhanVien = _danhSachNhanVien
+                      .where((nv) => nv.phongBan == phongBan)
+                      .length;
+                  return Card(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                        child: Text(
+                          phongBan[0].toUpperCase(),
+                          style: TextStyle(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      title: Text(phongBan),
+                      subtitle: Text('$soNhanVien nhân viên'),
+                      trailing: Icon(
+                        Icons.people,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                  );
+                }),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Đóng'),
+          ),
+        ],
+      ),
     );
   }
 

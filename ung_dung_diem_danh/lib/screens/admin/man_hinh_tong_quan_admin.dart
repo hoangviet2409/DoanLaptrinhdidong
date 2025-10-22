@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../config/theme.dart';
@@ -10,6 +9,7 @@ import '../../services/auth_service.dart';
 import '../../services/auth_manager.dart';
 import '../../services/diem_danh_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'man_hinh_cham_cong_thu_cong.dart';
 
 class ManHinhTongQuanAdmin extends StatefulWidget {
   const ManHinhTongQuanAdmin({super.key});
@@ -302,64 +302,155 @@ class _ManHinhTongQuanAdminState extends State<ManHinhTongQuanAdmin> {
                       
                       // Quick Actions
                       Text(
-                        'Quản Lý',
+                        'Truy Cập Nhanh',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 16),
                       
-                      _buildMenuItem(
-                        context,
-                        icon: Icons.people_alt,
-                        title: 'Quản Lý Nhân Viên',
-                        subtitle: 'Thêm, sửa, xóa nhân viên',
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Chức năng đang phát triển')),
-                          );
-                        },
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildQuickActionCard(
+                              context,
+                              icon: Icons.edit_note,
+                              title: 'Chấm Công',
+                              color: Colors.blue,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const ManHinhChamCongThuCong(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildQuickActionCard(
+                              context,
+                              icon: Icons.person_add,
+                              title: 'Thêm NV',
+                              color: Colors.green,
+                              onTap: () {
+                                Navigator.pushNamed(context, '/tao-nhan-vien');
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                      _buildMenuItem(
-                        context,
-                        icon: Icons.admin_panel_settings,
-                        title: 'Quản Lý Người Dùng',
-                        subtitle: 'Tạo tài khoản Admin và Quản lý',
-                        onTap: () {
-                          context.go('/admin/manage-users');
-                        },
-                      ),
-                      _buildMenuItem(
-                        context,
-                        icon: Icons.edit_note,
-                        title: 'Chấm Công Thủ Công',
-                        subtitle: 'Chấm công cho nhân viên',
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Chức năng đang phát triển')),
-                          );
-                        },
-                      ),
-                      _buildMenuItem(
-                        context,
-                        icon: Icons.assessment,
-                        title: 'Báo Cáo',
-                        subtitle: 'Xem báo cáo tuần, tháng, năm',
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Chức năng đang phát triển')),
-                          );
-                        },
-                      ),
-                      _buildMenuItem(
-                        context,
-                        icon: Icons.attach_money,
-                        title: 'Quản Lý Lương',
-                        subtitle: 'Tính và quản lý lương nhân viên',
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Chức năng đang phát triển')),
-                          );
-                        },
-                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Nhân viên chưa điểm danh
+                      if (_dashboardData != null && _dashboardData!.nhanVienChuaDiemDanh.isNotEmpty) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Nhân Viên Chưa Điểm Danh',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            Text(
+                              '${_dashboardData!.nhanVienChuaDiemDanh.length}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.errorColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        ..._dashboardData!.nhanVienChuaDiemDanh.take(5).map(
+                          (nv) => Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.red[100],
+                                child: Text(
+                                  nv.maNhanVien,
+                                  style: TextStyle(
+                                    color: Colors.red[700],
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              title: Text(nv.hoTen),
+                              subtitle: Text('${nv.phongBan} - ${nv.chucVu}'),
+                              trailing: IconButton(
+                                icon: Icon(Icons.edit_note, color: AppTheme.primaryColor),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => const ManHinhChamCongThuCong(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ).toList(),
+                        const SizedBox(height: 16),
+                      ],
+                      
+                      // Nhân viên đang làm việc
+                      if (_dashboardData != null && _dashboardData!.nhanVienDangLamViec.isNotEmpty) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Nhân Viên Đang Làm Việc',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            Text(
+                              '${_dashboardData!.nhanVienDangLamViec.length}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.successColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        ..._dashboardData!.nhanVienDangLamViec.map(
+                          (nv) => Card(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: Colors.green[100],
+                                child: Text(
+                                  nv.maNhanVien,
+                                  style: TextStyle(
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                              title: Text(nv.hoTen),
+                              subtitle: Text('${nv.phongBan} - ${nv.chucVu}\nĐã làm: ${nv.soGioLam.toStringAsFixed(1)}h'),
+                              trailing: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.work, color: Colors.green[700], size: 20),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    nv.trangThai,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.green[700],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ).toList(),
+                      ],
                       
                     ],
                   ),
@@ -400,23 +491,45 @@ class _ManHinhTongQuanAdminState extends State<ManHinhTongQuanAdmin> {
     );
   }
 
-  Widget _buildMenuItem(
+  Widget _buildQuickActionCard(
     BuildContext context, {
     required IconData icon,
     required String title,
-    required String subtitle,
+    required Color color,
     required VoidCallback onTap,
   }) {
     return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
-          child: Icon(icon, color: AppTheme.primaryColor),
-        ),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.chevron_right),
+      elevation: 2,
+      child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: color.withOpacity(0.1),
+                child: Icon(
+                  icon,
+                  size: 28,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

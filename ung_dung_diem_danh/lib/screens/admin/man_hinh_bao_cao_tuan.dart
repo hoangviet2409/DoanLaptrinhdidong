@@ -71,6 +71,54 @@ class _ManHinhBaoCaoTuanState extends State<ManHinhBaoCaoTuan> {
     );
   }
 
+  Future<void> _guiEmailBaoCao() async {
+    if (_reportResult == null || (_reportResult!.danhSachDiemDanh?.isEmpty ?? true)) {
+      _showSnackBar('Vui lòng lấy báo cáo trước khi gửi email!', isError: true);
+      return;
+    }
+
+    // Hiển thị dialog chọn nhân viên hoặc gửi tất cả
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Gửi Email Báo Cáo'),
+        content: const Text('Gửi báo cáo tuần qua email cho tất cả nhân viên trong báo cáo?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            child: const Text('Gửi Email'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      setState(() => _isLoading = true);
+      try {
+        // Gửi email cho từng nhân viên trong báo cáo
+        int successCount = 0;
+        for (var diemDanh in _reportResult!.danhSachDiemDanh ?? []) {
+          try {
+            await _baoCaoService.guiEmailBaoCao(diemDanh.nhanVienId, 'Tuan');
+            successCount++;
+          } catch (e) {
+            print('Lỗi gửi email cho NV ${diemDanh.maNhanVien}: $e');
+          }
+        }
+        _showSnackBar('Đã gửi email thành công cho $successCount nhân viên!', isError: false);
+      } catch (e) {
+        _showSnackBar('Lỗi: ${e.toString()}', isError: true);
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,6 +126,14 @@ class _ManHinhBaoCaoTuanState extends State<ManHinhBaoCaoTuan> {
         title: const Text('Báo Cáo Tuần'),
         backgroundColor: Colors.blue,
         foregroundColor: Colors.white,
+        actions: [
+          if (_reportResult != null && (_reportResult!.danhSachDiemDanh?.isNotEmpty ?? false))
+            IconButton(
+              icon: const Icon(Icons.email),
+              tooltip: 'Gửi Email',
+              onPressed: _guiEmailBaoCao,
+            ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

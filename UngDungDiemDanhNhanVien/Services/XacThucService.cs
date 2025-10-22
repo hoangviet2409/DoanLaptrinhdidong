@@ -60,6 +60,7 @@ namespace UngDungDiemDanhNhanVien.Services
                 }
 
                 var nhanVien = await _context.NhanVien
+                    .AsNoTracking() // Đảm bảo luôn lấy data mới từ DB
                     .FirstOrDefaultAsync(n => n.MaNhanVien == request.MaNhanVien);
 
                 if (nhanVien == null)
@@ -71,17 +72,22 @@ namespace UngDungDiemDanhNhanVien.Services
                     };
                 }
 
+                // LOG: Debug password hash
+                Console.WriteLine($"[DEBUG] MaNV: {request.MaNhanVien}, MatKhauHash từ DB: {nhanVien.MatKhauHash?.Substring(0, Math.Min(20, nhanVien.MatKhauHash?.Length ?? 0))}...");
+
                 // Kiểm tra mật khẩu nếu có
                 if (!string.IsNullOrEmpty(request.MatKhau) && 
                     (string.IsNullOrEmpty(nhanVien.MatKhauHash) || 
                      !BCrypt.Net.BCrypt.Verify(request.MatKhau, nhanVien.MatKhauHash)))
                 {
+                    Console.WriteLine($"[DEBUG] Mật khẩu không khớp cho MaNV: {request.MaNhanVien}");
                     return new DangNhapResponse
                     {
                         ThanhCong = false,
                         ThongBao = "Mã nhân viên hoặc mật khẩu không đúng"
                     };
                 }
+                Console.WriteLine($"[DEBUG] Đăng nhập thành công cho MaNV: {request.MaNhanVien}");
 
                 if (nhanVien.TrangThai != "HoatDong")
                 {
@@ -329,6 +335,73 @@ namespace UngDungDiemDanhNhanVien.Services
             };
         }
 
+        public async Task<bool> DoiMatKhau(int userId, DoiMatKhauRequest request)
+        {
+            // Tìm người dùng trong bảng QuanTriVien (AsNoTracking để lấy data mới nhất)
+            var quanTriVien = await _context.QuanTriVien.AsNoTracking().FirstOrDefaultAsync(q => q.Id == userId);
+            
+            if (quanTriVien != null)
+            {
+                // Kiểm tra mật khẩu cũ
+                if (!string.IsNullOrEmpty(quanTriVien.MatKhauHash) &&
+                    !BCrypt.Net.BCrypt.Verify(request.MatKhauCu, quanTriVien.MatKhauHash))
+                {
+                    Console.WriteLine($"[DEBUG] Đổi MK thất bại: Mật khẩu cũ sai cho QuanTriVien ID={userId}");
+                    return false; // Mật khẩu cũ không đúng
+                }
+
+                // Cập nhật mật khẩu mới
+                var newHash = BCrypt.Net.BCrypt.HashPassword(request.MatKhauMoi);
+                Console.WriteLine($"[DEBUG] Đổi MK QuanTriVien ID={userId}: Hash mới={newHash.Substring(0,20)}...");
+                
+                // Load entity để update (entity cũ đã AsNoTracking nên không bị conflict)
+                var quanTriVienToUpdate = await _context.QuanTriVien.FindAsync(userId);
+                if (quanTriVienToUpdate != null)
+                {
+                    quanTriVienToUpdate.MatKhauHash = newHash;
+                    _context.Entry(quanTriVienToUpdate).State = EntityState.Modified;
+                    
+                    var result = await _context.SaveChangesAsync();
+                    Console.WriteLine($"[DEBUG] SaveChanges trả về: {result} row(s) affected cho QuanTriVien ID={userId}");
+                    return result > 0;
+                }
+            }
+
+            // Tìm người dùng trong bảng NhanVien (AsNoTracking để lấy data mới nhất)
+            var nhanVien = await _context.NhanVien.AsNoTracking().FirstOrDefaultAsync(n => n.Id == userId);
+            
+            if (nhanVien != null)
+            {
+                // Kiểm tra mật khẩu cũ nếu có
+                if (!string.IsNullOrEmpty(nhanVien.MatKhauHash) && 
+                    !BCrypt.Net.BCrypt.Verify(request.MatKhauCu, nhanVien.MatKhauHash))
+                {
+                    Console.WriteLine($"[DEBUG] Đổi MK thất bại: Mật khẩu cũ sai cho NhanVien ID={userId}");
+                    return false; // Mật khẩu cũ không đúng
+                }
+
+                // Cập nhật mật khẩu mới
+                var newHash = BCrypt.Net.BCrypt.HashPassword(request.MatKhauMoi);
+                Console.WriteLine($"[DEBUG] Đổi MK NhanVien ID={userId}, MaNV={nhanVien.MaNhanVien}: Hash mới={newHash.Substring(0,20)}...");
+                
+                // Load entity để update (entity cũ đã AsNoTracking nên không bị conflict)
+                var nhanVienToUpdate = await _context.NhanVien.FindAsync(userId);
+                if (nhanVienToUpdate != null)
+                {
+                    nhanVienToUpdate.MatKhauHash = newHash;
+                    nhanVienToUpdate.NgayCapNhat = DateTime.Now;
+                    _context.Entry(nhanVienToUpdate).State = EntityState.Modified;
+                    
+                    var result = await _context.SaveChangesAsync();
+                    Console.WriteLine($"[DEBUG] SaveChanges trả về: {result} row(s) affected cho NhanVien ID={userId}");
+                    return result > 0;
+                }
+            }
+
+            Console.WriteLine($"[DEBUG] Không tìm thấy người dùng ID={userId}");
+            return false; // Không tìm thấy người dùng
+        }
+
         public string TaoJwtToken(string userId, string vaiTro, string hoTen, string? maNhanVien = null)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
@@ -366,3 +439,4 @@ namespace UngDungDiemDanhNhanVien.Services
         }
     }
 }
+

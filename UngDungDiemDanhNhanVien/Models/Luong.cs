@@ -40,6 +40,11 @@ namespace UngDungDiemDanhNhanVien.Models
         public string TrangThai { get; set; } = "ChuaTra"; // ChuaTra, DaTra
 
         public DateTime NgayTao { get; set; } = DateTime.Now;
+        
+        public DateTime? NgayThanhToan { get; set; }
+        
+        [StringLength(500)]
+        public string? GhiChu { get; set; }
 
         // Navigation properties
         [ForeignKey("NhanVienId")]

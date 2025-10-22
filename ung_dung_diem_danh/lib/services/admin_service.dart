@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../config/constants.dart';
 import '../models/dang_ky_request.dart';
 import '../models/dang_ky_response.dart';
@@ -16,7 +17,10 @@ class AdminService {
       // Lấy token từ AuthService
       final token = await _authService.getCurrentToken();
       if (token == null) {
-        throw Exception('Chưa đăng nhập');
+        return DangKyResponse(
+          thanhCong: false,
+          thongBao: 'Chưa đăng nhập',
+        );
       }
       
       // Set token cho API service
@@ -28,8 +32,42 @@ class AdminService {
       );
 
       return DangKyResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      // Parse error response từ backend
+      if (e.response?.data != null) {
+        print('🔴 ERROR RESPONSE DATA: ${e.response!.data}');
+        print('🔴 ERROR RESPONSE TYPE: ${e.response!.data.runtimeType}');
+        
+        if (e.response!.data is Map) {
+          final errorData = e.response!.data as Map<String, dynamic>;
+          
+          // Kiểm tra ModelState errors từ ASP.NET
+          if (errorData.containsKey('errors')) {
+            final errors = errorData['errors'] as Map<String, dynamic>;
+            final errorMessages = errors.values
+                .expand((e) => e as List)
+                .join(', ');
+            return DangKyResponse(
+              thanhCong: false,
+              thongBao: errorMessages,
+            );
+          }
+          
+          return DangKyResponse(
+            thanhCong: false,
+            thongBao: errorData['thongBao'] ?? errorData['message'] ?? errorData['title'] ?? 'Tạo tài khoản thất bại',
+          );
+        }
+      }
+      return DangKyResponse(
+        thanhCong: false,
+        thongBao: 'Tạo tài khoản thất bại: ${e.message}',
+      );
     } catch (e) {
-      throw Exception('Tạo tài khoản thất bại: ${e.toString()}');
+      return DangKyResponse(
+        thanhCong: false,
+        thongBao: 'Lỗi không xác định: ${e.toString()}',
+      );
     }
   }
 

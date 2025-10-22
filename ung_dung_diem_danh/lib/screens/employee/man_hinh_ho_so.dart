@@ -5,9 +5,54 @@ import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
 import '../../config/theme.dart';
+import '../../services/api_service.dart';
+import '../../services/nhan_vien_service.dart';
+import '../../models/nhan_vien_model.dart';
+import 'man_hinh_luong.dart';
+import 'man_hinh_chinh_sua_thong_tin.dart';
+import 'man_hinh_doi_mat_khau.dart';
+import 'man_hinh_cai_dat_thong_bao.dart';
+import 'man_hinh_huong_dan_su_dung.dart';
 
-class ManHinhHoSo extends StatelessWidget {
+class ManHinhHoSo extends StatefulWidget {
   const ManHinhHoSo({super.key});
+
+  @override
+  State<ManHinhHoSo> createState() => _ManHinhHoSoState();
+}
+
+class _ManHinhHoSoState extends State<ManHinhHoSo> {
+  late NhanVienService _nhanVienService;
+  NhanVienModel? _nhanVien;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _nhanVienService = NhanVienService(ApiService());
+    _loadNhanVienInfo();
+  }
+
+  Future<void> _loadNhanVienInfo() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final authState = context.read<AuthBloc>().state;
+      if (authState is AuthAuthenticated && authState.user.nhanVienId != null) {
+        final nhanVien = await _nhanVienService.layNhanVienTheoId(authState.user.nhanVienId!);
+        if (mounted) {
+          setState(() {
+            _nhanVien = nhanVien;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,39 +63,50 @@ class ManHinhHoSo extends StatelessWidget {
         foregroundColor: Colors.white,
         actions: [
           IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadNhanVienInfo,
+            tooltip: 'Làm mới',
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => _showLogoutDialog(context),
             tooltip: 'Đăng xuất',
           ),
         ],
       ),
-      body: BlocBuilder<AuthBloc, AuthState>(
-        builder: (context, state) {
-          final user = state is AuthAuthenticated ? state.user : null;
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                final user = state is AuthAuthenticated ? state.user : null;
 
-          if (user == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
+                if (user == null) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Thông tin cá nhân
-                _buildPersonalInfoCard(user),
-                const SizedBox(height: 16),
+                return RefreshIndicator(
+                  onRefresh: _loadNhanVienInfo,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        // Thông tin cá nhân
+                        _buildPersonalInfoCard(user),
+                        const SizedBox(height: 16),
 
-                // Menu options
-                _buildMenuOptions(context),
-                const SizedBox(height: 16),
+                        // Menu options
+                        _buildMenuOptions(context),
+                        const SizedBox(height: 16),
 
-                // Thông tin ứng dụng
-                _buildAppInfoCard(),
-              ],
+                        // Thông tin ứng dụng
+                        _buildAppInfoCard(),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 
@@ -105,10 +161,11 @@ class ManHinhHoSo extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Thông tin chi tiết
-            _buildInfoRow(Icons.badge, 'ID Nhân viên', user.nhanVienId?.toString() ?? 'N/A'),
-            _buildInfoRow(Icons.email, 'Email', 'user@company.com'), // TODO: Lấy từ API
-            _buildInfoRow(Icons.phone, 'Số điện thoại', '+84 123 456 789'), // TODO: Lấy từ API
-            _buildInfoRow(Icons.location_on, 'Địa chỉ', 'Hà Nội, Việt Nam'), // TODO: Lấy từ API
+            _buildInfoRow(Icons.badge, 'Mã NV', _nhanVien?.maNhanVien ?? 'N/A'),
+            _buildInfoRow(Icons.email, 'Email', _nhanVien?.email ?? 'N/A'),
+            _buildInfoRow(Icons.phone, 'Số điện thoại', _nhanVien?.soDienThoai ?? 'N/A'),
+            _buildInfoRow(Icons.business, 'Phòng ban', _nhanVien?.phongBan ?? 'N/A'),
+            _buildInfoRow(Icons.work, 'Chức vụ', _nhanVien?.chucVu ?? 'N/A')
           ],
         ),
       ),
@@ -156,9 +213,32 @@ class ManHinhHoSo extends StatelessWidget {
             icon: Icons.edit,
             title: 'Chỉnh sửa thông tin',
             subtitle: 'Cập nhật thông tin cá nhân',
+            onTap: () async {
+              if (_nhanVien != null) {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ManHinhChinhSuaThongTin(
+                      nhanVien: _nhanVien!,
+                    ),
+                  ),
+                );
+                // Refresh nếu có cập nhật
+                if (result == true) {
+                  _loadNhanVienInfo();
+                }
+              }
+            },
+          ),
+          const Divider(height: 1),
+          _buildMenuOption(
+            icon: Icons.attach_money,
+            title: 'Lương',
+            subtitle: 'Xem lịch sử lương',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Chức năng đang phát triển')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ManHinhLuong()),
               );
             },
           ),
@@ -168,8 +248,9 @@ class ManHinhHoSo extends StatelessWidget {
             title: 'Bảo mật',
             subtitle: 'Đổi mật khẩu, xác thực',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Chức năng đang phát triển')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ManHinhDoiMatKhau()),
               );
             },
           ),
@@ -179,8 +260,9 @@ class ManHinhHoSo extends StatelessWidget {
             title: 'Thông báo',
             subtitle: 'Cài đặt thông báo',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Chức năng đang phát triển')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ManHinhCaiDatThongBao()),
               );
             },
           ),
@@ -190,8 +272,9 @@ class ManHinhHoSo extends StatelessWidget {
             title: 'Trợ giúp',
             subtitle: 'Hướng dẫn sử dụng',
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Chức năng đang phát triển')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ManHinhHuongDanSuDung()),
               );
             },
           ),

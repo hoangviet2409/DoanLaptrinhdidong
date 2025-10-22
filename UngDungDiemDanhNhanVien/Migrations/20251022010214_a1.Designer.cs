@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UngDungDiemDanhNhanVien.Data;
 
@@ -11,9 +12,11 @@ using UngDungDiemDanhNhanVien.Data;
 namespace UngDungDiemDanhNhanVien.Migrations
 {
     [DbContext(typeof(UngDungDiemDanhContext))]
-    partial class UngDungDiemDanhContextModelSnapshot : ModelSnapshot
+    [Migration("20251022010214_a1")]
+    partial class a1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,10 +100,6 @@ namespace UngDungDiemDanhNhanVien.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("GhiChu")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<string>("LoaiKy")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -116,9 +115,6 @@ namespace UngDungDiemDanhNhanVien.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("NgayTao")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("NgayThanhToan")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("NhanVienId")
@@ -307,8 +303,8 @@ namespace UngDungDiemDanhNhanVien.Migrations
                         {
                             Id = 1,
                             Email = "admin@congty.com",
-                            MatKhauHash = "$2a$11$oLOGBfjKXJ26ILpGl1j0zOTg.kw3zVBY8k9jkLNY8yQtL.mzJ5kOO",
-                            NgayTao = new DateTime(2025, 10, 22, 9, 12, 48, 783, DateTimeKind.Local).AddTicks(1695),
+                            MatKhauHash = "$2a$11$iu0Pe2W6zbQjqT5xHYrzcOVHoLkup8B7oFWPCfEf.GXVOdcf6ntXi",
+                            NgayTao = new DateTime(2025, 10, 22, 8, 2, 14, 411, DateTimeKind.Local).AddTicks(7272),
                             TenDangNhap = "admin",
                             VaiTro = "Admin"
                         });

@@ -5,6 +5,7 @@ class DangKyRequest {
   final String vaiTro;
   final String? hoTen;
   final String? soDienThoai;
+  final String? xacNhanMatKhau;
 
   DangKyRequest({
     required this.tenDangNhap,
@@ -13,7 +14,8 @@ class DangKyRequest {
     required this.vaiTro,
     this.hoTen,
     this.soDienThoai,
-  });
+    String? xacNhanMatKhau,
+  }) : xacNhanMatKhau = xacNhanMatKhau ?? matKhau; // Auto-fill với matKhau nếu null
 
   Map<String, dynamic> toJson() {
     return {
@@ -23,6 +25,7 @@ class DangKyRequest {
       'vaiTro': vaiTro,
       'hoTen': hoTen,
       'soDienThoai': soDienThoai,
+      'xacNhanMatKhau': xacNhanMatKhau,
     };
   }
 
@@ -34,6 +37,7 @@ class DangKyRequest {
       vaiTro: json['vaiTro'] ?? '',
       hoTen: json['hoTen'],
       soDienThoai: json['soDienThoai'],
+      xacNhanMatKhau: json['xacNhanMatKhau'],
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/routes.dart';
 import 'config/theme.dart';
@@ -10,6 +11,9 @@ import 'blocs/auth/auth_event.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Khởi tạo locale data cho intl package
+  await initializeDateFormatting('vi_VN', null);
   
   // Khởi tạo SharedPreferences
   final prefs = await SharedPreferences.getInstance();
@@ -34,11 +38,18 @@ class UngDungDiemDanh extends StatelessWidget {
           create: (context) => AuthBloc(authService)..add(CheckAuthStatus()),
         ),
       ],
-      child: MaterialApp.router(
-        title: 'Điểm Danh Nhân Viên',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        routerConfig: AppRouter.router,
+      child: Builder(
+        builder: (context) {
+          // Tạo router với context đã có BlocProvider
+          final router = AppRouter.createRouter(context);
+          
+          return MaterialApp.router(
+            title: 'Điểm Danh Nhân Viên',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            routerConfig: router,
+          );
+        },
       ),
     );
   }

@@ -66,7 +66,7 @@ namespace UngDungDiemDanhNhanVien.Services
                 .ToListAsync();
         }
 
-        public async Task<Luong?> CapNhatLuong(int id, decimal thuong, decimal truLuong)
+        public async Task<Luong?> CapNhatLuong(int id, decimal thuong, decimal truLuong, string? trangThai = null, string? ghiChu = null)
         {
             var luong = await _context.Luong.FindAsync(id);
             if (luong == null) return null;
@@ -74,6 +74,20 @@ namespace UngDungDiemDanhNhanVien.Services
             luong.Thuong = thuong;
             luong.TruLuong = truLuong;
             luong.TongCong = luong.TongTien + thuong - truLuong;
+            
+            if (!string.IsNullOrEmpty(trangThai))
+            {
+                luong.TrangThai = trangThai;
+                if (trangThai == "DaTra")
+                {
+                    luong.NgayThanhToan = DateTime.Now;
+                }
+            }
+            
+            if (ghiChu != null)
+            {
+                luong.GhiChu = ghiChu;
+            }
 
             await _context.SaveChangesAsync();
             
@@ -83,6 +97,16 @@ namespace UngDungDiemDanhNhanVien.Services
                 .LoadAsync();
                 
             return luong;
+        }
+
+        public async Task<bool> XoaLuong(int id)
+        {
+            var luong = await _context.Luong.FindAsync(id);
+            if (luong == null) return false;
+
+            _context.Luong.Remove(luong);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> TaoBangLuongThang(int thang, int nam)

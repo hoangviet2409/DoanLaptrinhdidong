@@ -46,11 +46,11 @@ class DiemDanhService {
   }
 
   /// Chấm công thủ công (Admin only)
-  Future<DiemDanhResponse> chamCongThuCong(DiemDanhThuCongRequest request) async {
+  Future<DiemDanhResponse> chamCongThuCong(dynamic request) async {
     try {
       final response = await _apiService.post(
         '/DiemDanh/cham-cong-thu-cong',
-        data: request.toJson(),
+        data: request is Map ? request : request.toJson(),
       );
       
       if (response.statusCode == 200) {

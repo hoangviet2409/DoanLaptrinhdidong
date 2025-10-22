@@ -85,4 +85,22 @@ class NhanVienService {
       throw Exception('Lỗi khi đăng ký sinh trắc học: ${e.toString()}');
     }
   }
+
+  /// Cập nhật thông tin nhân viên
+  Future<NhanVienModel> capNhatNhanVien(int id, NhanVienModel nhanVien) async {
+    try {
+      final response = await _apiService.put(
+        '${AppConstants.employeesEndpoint}/$id',
+        data: nhanVien.toJson(),
+      );
+      
+      if (response.statusCode == 200 && response.data != null) {
+        return NhanVienModel.fromJson(response.data);
+      } else {
+        throw Exception('Không thể cập nhật thông tin nhân viên');
+      }
+    } catch (e) {
+      throw Exception('Lỗi khi cập nhật thông tin nhân viên: ${e.toString()}');
+    }
+  }
 }
