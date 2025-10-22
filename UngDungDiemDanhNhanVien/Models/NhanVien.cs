@@ -34,6 +34,9 @@ namespace UngDungDiemDanhNhanVien.Models
         [StringLength(50)]
         public string? MaKhuonMat { get; set; }
 
+        [StringLength(50)]
+        public string? MaTheNfc { get; set; }
+
         [StringLength(100)]
         public string? PhongBan { get; set; }
 

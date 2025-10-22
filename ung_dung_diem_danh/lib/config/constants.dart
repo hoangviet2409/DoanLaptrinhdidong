@@ -1,7 +1,8 @@
 class AppConstants {
-  // API Configuration
-  static const String baseUrl = 'https://10.0.2.2:7000/api';
-  
+  // API Configuration - Cấu hình cho điện thoại thật
+  static const String baseUrl = 'https://172.20.10.12:7000/api/'; // Backend đang chạy trên HTTPS 7000
+
+
   // Endpoints
   static const String loginAdminEndpoint = '/XacThuc/dang-nhap-quan-tri';
   static const String loginEmployeeEndpoint = '/XacThuc/dang-nhap-nhan-vien';

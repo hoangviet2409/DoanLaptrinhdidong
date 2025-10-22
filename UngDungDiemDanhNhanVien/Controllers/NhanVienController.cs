@@ -108,5 +108,41 @@ namespace UngDungDiemDanhNhanVien.Controllers
 
             return Ok("Đăng ký sinh trắc học thành công");
         }
+
+        [HttpPut("{id}/ma-the-nfc")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> CapNhatMaTheNfc(int id, [FromBody] string? maTheNfc)
+        {
+            try
+            {
+                // Kiểm tra mã thẻ NFC có bị trùng không (nếu có giá trị)
+                if (!string.IsNullOrEmpty(maTheNfc))
+                {
+                    var tonTai = await _nhanVienService.KiemTraMaTheNfcTonTai(maTheNfc, id);
+                    if (tonTai)
+                    {
+                        return BadRequest("Mã thẻ NFC đã được sử dụng cho nhân viên khác");
+                    }
+                }
+
+                var result = await _nhanVienService.CapNhatMaTheNfc(id, maTheNfc);
+                if (!result)
+                    return NotFound("Không tìm thấy nhân viên");
+
+                return Ok("Cập nhật mã thẻ NFC thành công");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Lỗi cập nhật mã thẻ NFC: {ex.Message}");
+            }
+        }
+
+        [HttpGet("kiem-tra-ma-the-nfc/{maTheNfc}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult> KiemTraMaTheNfcTonTai(string maTheNfc, [FromQuery] int? nhanVienId = null)
+        {
+            var tonTai = await _nhanVienService.KiemTraMaTheNfcTonTai(maTheNfc, nhanVienId);
+            return Ok(new { tonTai = tonTai });
+        }
     }
 }

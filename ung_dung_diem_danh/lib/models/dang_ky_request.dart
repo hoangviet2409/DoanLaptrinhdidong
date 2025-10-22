@@ -64,6 +64,7 @@ class DangKyNhanVienRequest extends DangKyRequest {
   final String? phongBan;
   final String? chucVu;
   final double luongGio;
+  final String? maTheNfc;
 
   DangKyNhanVienRequest({
     required this.maNhanVien,
@@ -75,6 +76,7 @@ class DangKyNhanVienRequest extends DangKyRequest {
     String? soDienThoai,
     this.phongBan,
     this.chucVu,
+    this.maTheNfc,
   }) : super(
           tenDangNhap: tenDangNhap,
           matKhau: matKhau,
@@ -92,6 +94,7 @@ class DangKyNhanVienRequest extends DangKyRequest {
       'phongBan': phongBan,
       'chucVu': chucVu,
       'luongGio': luongGio,
+      'maTheNfc': maTheNfc,
     });
     return json;
   }
@@ -107,6 +110,7 @@ class DangKyNhanVienRequest extends DangKyRequest {
       soDienThoai: json['soDienThoai'],
       phongBan: json['phongBan'],
       chucVu: json['chucVu'],
+      maTheNfc: json['maTheNfc'],
     );
   }
 }

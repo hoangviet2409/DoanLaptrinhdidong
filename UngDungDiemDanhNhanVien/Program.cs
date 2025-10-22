@@ -119,4 +119,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// Cấu hình URL binding để có thể truy cập từ điện thoại
+app.Urls.Add("http://0.0.0.0:5000");
+app.Urls.Add("https://0.0.0.0:7000");
+
 app.Run();

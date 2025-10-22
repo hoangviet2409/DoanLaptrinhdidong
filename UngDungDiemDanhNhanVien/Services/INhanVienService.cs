@@ -12,5 +12,7 @@ namespace UngDungDiemDanhNhanVien.Services
         Task<bool> XoaNhanVien(int id);
         Task<bool> CapNhatTrangThai(int id, string trangThai);
         Task<bool> DangKySinhTracHoc(int id, string maSinhTracHoc);
+        Task<bool> CapNhatMaTheNfc(int id, string? maTheNfc);
+        Task<bool> KiemTraMaTheNfcTonTai(string maTheNfc, int? nhanVienId = null);
     }
 }

@@ -61,6 +61,7 @@ namespace UngDungDiemDanhNhanVien.Services
             nhanVienHienTai.TrangThai = nhanVien.TrangThai;
             nhanVienHienTai.MaSinhTracHoc = nhanVien.MaSinhTracHoc;
             nhanVienHienTai.MaKhuonMat = nhanVien.MaKhuonMat;
+            nhanVienHienTai.MaTheNfc = nhanVien.MaTheNfc;
             nhanVienHienTai.NgayCapNhat = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -97,6 +98,37 @@ namespace UngDungDiemDanhNhanVien.Services
             nhanVien.NgayCapNhat = DateTime.Now;
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<bool> CapNhatMaTheNfc(int id, string? maTheNfc)
+        {
+            var nhanVien = await _context.NhanVien.FindAsync(id);
+            if (nhanVien == null) return false;
+
+            // Kiểm tra mã thẻ NFC có bị trùng không (nếu có giá trị)
+            if (!string.IsNullOrEmpty(maTheNfc))
+            {
+                var tonTai = await KiemTraMaTheNfcTonTai(maTheNfc, id);
+                if (tonTai) return false;
+            }
+
+            nhanVien.MaTheNfc = maTheNfc;
+            nhanVien.NgayCapNhat = DateTime.Now;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> KiemTraMaTheNfcTonTai(string maTheNfc, int? nhanVienId = null)
+        {
+            var query = _context.NhanVien.Where(n => n.MaTheNfc == maTheNfc);
+            
+            // Nếu có nhanVienId, loại trừ nhân viên đó khỏi kết quả tìm kiếm
+            if (nhanVienId.HasValue)
+            {
+                query = query.Where(n => n.Id != nhanVienId.Value);
+            }
+
+            return await query.AnyAsync();
         }
     }
 }

@@ -164,6 +164,104 @@ namespace UngDungDiemDanhNhanVien.Services
             }
         }
 
+        public async Task<DiemDanhResponse> DiemDanhNfc(DiemDanhNfcRequest request)
+        {
+            try
+            {
+                // Tìm nhân viên theo mã thẻ NFC
+                var nhanVien = await _context.NhanVien
+                    .FirstOrDefaultAsync(n => n.MaTheNfc == request.MaTheNfc);
+
+                if (nhanVien == null)
+                {
+                    return new DiemDanhResponse
+                    {
+                        ThanhCong = false,
+                        ThongBao = "Thẻ NFC không hợp lệ hoặc chưa được gán cho nhân viên"
+                    };
+                }
+
+                if (nhanVien.TrangThai != "HoatDong")
+                {
+                    return new DiemDanhResponse
+                    {
+                        ThanhCong = false,
+                        ThongBao = "Tài khoản nhân viên đã bị khóa"
+                    };
+                }
+
+                var ngayHienTai = DateTime.Now.Date;
+
+                // Lấy bản ghi điểm danh hôm nay
+                var diemDanhHienTai = await _context.DiemDanh
+                    .FirstOrDefaultAsync(d => d.NhanVienId == nhanVien.Id && d.Ngay == ngayHienTai);
+
+                if (diemDanhHienTai == null || !diemDanhHienTai.GioVao.HasValue)
+                {
+                    // Nếu chưa có điểm danh vào => tạo bản ghi và set giờ vào
+                    if (diemDanhHienTai == null)
+                    {
+                        diemDanhHienTai = new DiemDanh
+                        {
+                            NhanVienId = nhanVien.Id,
+                            Ngay = ngayHienTai,
+                            TrangThai = "DangLam"
+                        };
+                        _context.DiemDanh.Add(diemDanhHienTai);
+                    }
+
+                    diemDanhHienTai.GioVao = DateTime.Now;
+                    diemDanhHienTai.PhuongThucVao = "NFC";
+                    diemDanhHienTai.ViDo = request.ViDo?.ToString();
+                    diemDanhHienTai.KinhDo = request.KinhDo?.ToString();
+                    diemDanhHienTai.GhiChu = request.GhiChu;
+
+                    await _context.SaveChangesAsync();
+
+                    return new DiemDanhResponse
+                    {
+                        ThanhCong = true,
+                        ThongBao = "Điểm danh vào (NFC) thành công",
+                        DiemDanh = await TaoDiemDanhDto(diemDanhHienTai)
+                    };
+                }
+
+                // Nếu đã điểm danh vào nhưng chưa ra => set giờ ra
+                if (!diemDanhHienTai.GioRa.HasValue)
+                {
+                    diemDanhHienTai.GioRa = DateTime.Now;
+                    diemDanhHienTai.PhuongThucRa = "NFC";
+                    diemDanhHienTai.ViDo = request.ViDo?.ToString();
+                    diemDanhHienTai.KinhDo = request.KinhDo?.ToString();
+                    diemDanhHienTai.TrangThai = "DaVe";
+
+                    await _context.SaveChangesAsync();
+
+                    return new DiemDanhResponse
+                    {
+                        ThanhCong = true,
+                        ThongBao = "Điểm danh ra (NFC) thành công",
+                        DiemDanh = await TaoDiemDanhDto(diemDanhHienTai)
+                    };
+                }
+
+                // Đã có giờ vào và ra
+                return new DiemDanhResponse
+                {
+                    ThanhCong = false,
+                    ThongBao = "Hôm nay đã hoàn thành điểm danh"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new DiemDanhResponse
+                {
+                    ThanhCong = false,
+                    ThongBao = "Lỗi khi điểm danh bằng NFC: " + ex.Message
+                };
+            }
+        }
+
         public async Task<DiemDanhResponse> DiemDanhThuCong(DiemDanhThuCongRequest request, int quanTriVienId)
         {
             try
