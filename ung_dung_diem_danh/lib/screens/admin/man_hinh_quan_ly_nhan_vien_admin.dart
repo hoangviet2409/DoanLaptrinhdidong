@@ -6,6 +6,8 @@ import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'man_hinh_chi_tiet_nhan_vien.dart';
+import 'man_hinh_tao_nhan_vien.dart';
+import 'man_hinh_quan_ly_user.dart';
 
 class ManHinhQuanLyNhanVienAdmin extends StatefulWidget {
   const ManHinhQuanLyNhanVienAdmin({super.key});
@@ -91,6 +93,49 @@ class _ManHinhQuanLyNhanVienAdminState extends State<ManHinhQuanLyNhanVienAdmin>
         title: const Text('Quản Lý Nhân Viên'),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              if (value == 'create_admin') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ManHinhQuanLyUser(),
+                  ),
+                );
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'create_admin',
+                child: Row(
+                  children: [
+                    Icon(Icons.admin_panel_settings, size: 20),
+                    SizedBox(width: 12),
+                    Text('Tạo Admin/Quản Lý'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ManHinhTaoNhanVien(),
+            ),
+          );
+          if (result == true) {
+            _loadDanhSachNhanVien();
+          }
+        },
+        backgroundColor: AppTheme.primaryColor,
+        icon: const Icon(Icons.person_add, color: Colors.white),
+        label: const Text('Thêm NV', style: TextStyle(color: Colors.white)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

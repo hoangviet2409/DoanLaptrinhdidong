@@ -40,8 +40,8 @@ namespace UngDungDiemDanhNhanVien.DTOs
 
     public class DiemDanhThuCongRequest
     {
-        [Required(ErrorMessage = "Mã nhân viên là bắt buộc")]
-        public string MaNhanVien { get; set; } = string.Empty;
+        [Required(ErrorMessage = "ID nhân viên là bắt buộc")]
+        public int NhanVienId { get; set; }
 
         [Required(ErrorMessage = "Giờ vào là bắt buộc")]
         public DateTime GioVao { get; set; }

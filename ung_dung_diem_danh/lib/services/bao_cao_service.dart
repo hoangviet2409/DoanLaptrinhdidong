@@ -150,4 +150,20 @@ class BaoCaoService {
       throw Exception('Gửi email báo cáo thất bại: $e');
     }
   }
+
+  /// Gửi email báo cáo đơn giản (backend tự xử lý chi tiết)
+  Future<bool> guiEmailBaoCao(int nhanVienId, String loaiBaoCao) async {
+    try {
+      final response = await _apiService.post(
+        '/BaoCao/gui-email',
+        data: {
+          'nhanVienId': nhanVienId,
+          'loaiBaoCao': loaiBaoCao,
+        },
+      );
+      return response.data['thanhCong'] ?? false;
+    } catch (e) {
+      throw Exception('Gửi email báo cáo thất bại: $e');
+    }
+  }
 }

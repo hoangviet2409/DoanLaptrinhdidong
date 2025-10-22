@@ -168,16 +168,16 @@ namespace UngDungDiemDanhNhanVien.Services
         {
             try
             {
-                // Tìm nhân viên theo mã
+                // Tìm nhân viên theo ID
                 var nhanVien = await _context.NhanVien
-                    .FirstOrDefaultAsync(n => n.MaNhanVien == request.MaNhanVien);
+                    .FirstOrDefaultAsync(n => n.Id == request.NhanVienId);
 
                 if (nhanVien == null)
                 {
                     return new DiemDanhResponse
                     {
                         ThanhCong = false,
-                        ThongBao = "Không tìm thấy nhân viên với mã: " + request.MaNhanVien
+                        ThongBao = "Không tìm thấy nhân viên với ID: " + request.NhanVienId
                     };
                 }
 
@@ -377,9 +377,13 @@ namespace UngDungDiemDanhNhanVien.Services
                 var nhanVienNghi = diemDanhHomNay.Count(d => d.GioRa != null);
                 var nhanVienChuaDiemDanh = tongNhanVien - diemDanhHomNay.Count;
                 var tyLeChuyenCan = tongNhanVien > 0 ? (double)diemDanhHomNay.Count / tongNhanVien * 100 : 0;
-                var gioLamTrungBinh = diemDanhHomNay.Any() ? 
-                    diemDanhHomNay.Where(d => d.GioVao != null && d.GioRa != null)
-                        .Average(d => (d.GioRa.Value - d.GioVao.Value).TotalHours) : 0;
+                
+                // Fix: Check if there are records with both GioVao and GioRa before calling Average
+                var diemDanhCoGioVaRa = diemDanhHomNay
+                    .Where(d => d.GioVao != null && d.GioRa != null)
+                    .ToList();
+                var gioLamTrungBinh = diemDanhCoGioVaRa.Any() ? 
+                    diemDanhCoGioVaRa.Average(d => (d.GioRa!.Value - d.GioVao!.Value).TotalHours) : 0;
 
                 // Danh sách nhân viên đang làm việc
                 var nhanVienDangLamViecList = diemDanhHomNay
@@ -419,15 +423,19 @@ namespace UngDungDiemDanhNhanVien.Services
                     var ngay = ngayHienTai.AddDays(-i);
                     var diemDanhNgay = diemDanh7Ngay.Where(d => d.Ngay == ngay).ToList();
                     
+                    // Fix: Check if there are records with both GioVao and GioRa before calling Average
+                    var diemDanhNgayCoGioVaRa = diemDanhNgay
+                        .Where(d => d.GioVao != null && d.GioRa != null)
+                        .ToList();
+                    
                     thongKeTheoNgay.Add(new ThongKeTheoNgay
                     {
                         Ngay = ngay,
                         SoNhanVienDiemDanh = diemDanhNgay.Count,
                         SoNhanVienDiMuon = diemDanhNgay.Count(d => d.GioVao?.Hour > 8), // Giả sử 8h là giờ bắt đầu
                         SoNhanVienVeSom = diemDanhNgay.Count(d => d.GioRa?.Hour < 17), // Giả sử 17h là giờ kết thúc
-                        GioLamTrungBinh = diemDanhNgay.Any() ? 
-                            diemDanhNgay.Where(d => d.GioVao != null && d.GioRa != null)
-                                .Average(d => (d.GioRa.Value - d.GioVao.Value).TotalHours) : 0
+                        GioLamTrungBinh = diemDanhNgayCoGioVaRa.Any() ? 
+                            diemDanhNgayCoGioVaRa.Average(d => (d.GioRa!.Value - d.GioVao!.Value).TotalHours) : 0
                     });
                 }
 

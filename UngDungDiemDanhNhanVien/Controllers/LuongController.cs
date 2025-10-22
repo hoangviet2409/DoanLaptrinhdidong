@@ -176,7 +176,7 @@ namespace UngDungDiemDanhNhanVien.Controllers
         {
             try
             {
-                var luong = await _luongService.CapNhatLuong(id, request.Thuong, request.TruLuong);
+                var luong = await _luongService.CapNhatLuong(id, request.Thuong, request.TruLuong, request.TrangThai, request.GhiChu);
 
                 if (luong == null)
                 {
@@ -283,11 +283,21 @@ namespace UngDungDiemDanhNhanVien.Controllers
         {
             try
             {
-                // TODO: Implement Delete method in service
+                var success = await _luongService.XoaLuong(id);
+                
+                if (!success)
+                {
+                    return NotFound(new LuongResponse
+                    {
+                        ThanhCong = false,
+                        ThongBao = "Không tìm thấy bản ghi lương"
+                    });
+                }
+
                 return Ok(new LuongResponse
                 {
                     ThanhCong = true,
-                    ThongBao = "Chức năng đang phát triển"
+                    ThongBao = "Xóa lương thành công"
                 });
             }
             catch (Exception ex)

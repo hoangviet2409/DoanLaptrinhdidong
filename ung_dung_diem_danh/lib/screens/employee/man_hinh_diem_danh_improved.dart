@@ -64,10 +64,12 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Lỗi kết nối: ${e.toString()}';
       });
     } finally {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -89,6 +91,7 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
       final thongKe = await diemDanhService.layThongKeDiemDanhCaNhan();
 
       if (thongKe.thanhCong) {
+        if (!mounted) return;
         setState(() {
           _thongKe = thongKe;
         });
@@ -100,6 +103,7 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
       }
       
       // If API fails, use default values
+      if (!mounted) return;
       setState(() {
         _thongKe = ThongKeDiemDanhResponse(
           thanhCong: false,
@@ -115,6 +119,7 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
   }
 
   Future<void> _getCurrentLocation() async {
+    if (!mounted) return;
     setState(() {
       _isCheckingLocation = true;
     });
@@ -125,6 +130,7 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
+          if (!mounted) return;
           setState(() {
             _isCheckingLocation = false;
           });
@@ -133,6 +139,7 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
       }
 
       if (permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
         setState(() {
           _isCheckingLocation = false;
         });
@@ -144,11 +151,13 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
         desiredAccuracy: LocationAccuracy.high,
       );
 
+      if (!mounted) return;
       setState(() {
         _currentPosition = position;
         _isCheckingLocation = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isCheckingLocation = false;
       });
@@ -161,6 +170,7 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -197,6 +207,7 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
     } catch (e) {
       _showMessage('Lỗi: ${e.toString()}', isError: true);
     } finally {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -209,6 +220,7 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
       return;
     }
 
+    if (!mounted) return;
     setState(() {
       _isLoading = true;
     });
@@ -245,6 +257,7 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
     } catch (e) {
       _showMessage('Lỗi: ${e.toString()}', isError: true);
     } finally {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });

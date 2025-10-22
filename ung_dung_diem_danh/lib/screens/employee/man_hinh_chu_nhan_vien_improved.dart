@@ -9,6 +9,7 @@ import '../../services/auth_service.dart';
 import '../../services/auth_manager.dart';
 import '../../models/diem_danh_response.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'man_hinh_luong.dart';
 
 class ManHinhChuNhanVienImproved extends StatefulWidget {
   final Function(int)? onNavigateToTab;
@@ -34,6 +35,7 @@ class _ManHinhChuNhanVienImprovedState extends State<ManHinhChuNhanVienImproved>
 
   Future<void> _loadDiemDanhHienTai() async {
     try {
+      if (!mounted) return;
       setState(() {
         _isLoading = true;
         _errorMessage = null;
@@ -52,10 +54,12 @@ class _ManHinhChuNhanVienImprovedState extends State<ManHinhChuNhanVienImproved>
       final diemDanh = await diemDanhService.layDiemDanhHienTaiCaNhan();
 
       if (diemDanh != null) {
+        if (!mounted) return;
         setState(() {
           _diemDanhHienTai = diemDanh;
         });
       } else {
+        if (!mounted) return;
         setState(() {
           _errorMessage = 'Chưa có điểm danh hôm nay';
         });
@@ -66,10 +70,12 @@ class _ManHinhChuNhanVienImprovedState extends State<ManHinhChuNhanVienImproved>
         return; // Error was handled by AuthManager
       }
       
+      if (!mounted) return;
       setState(() {
         _errorMessage = 'Lỗi kết nối: ${e.toString()}';
       });
     } finally {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
       });
@@ -561,9 +567,10 @@ class _ManHinhChuNhanVienImprovedState extends State<ManHinhChuNhanVienImproved>
           title: 'Lương',
           subtitle: 'Xem thông tin lương',
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Chức năng đang phát triển'),
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ManHinhLuong(),
               ),
             );
           },
@@ -642,6 +649,7 @@ class _ManHinhChuNhanVienImprovedState extends State<ManHinhChuNhanVienImproved>
       final thongKe = await diemDanhService.layThongKeDiemDanhCaNhan();
 
       if (thongKe.thanhCong) {
+        if (!mounted) return;
         setState(() {
           _thongKe = thongKe;
         });
@@ -653,6 +661,7 @@ class _ManHinhChuNhanVienImprovedState extends State<ManHinhChuNhanVienImproved>
       }
       
       // If API fails, use default values
+      if (!mounted) return;
       setState(() {
         _thongKe = ThongKeDiemDanhResponse(
           thanhCong: false,

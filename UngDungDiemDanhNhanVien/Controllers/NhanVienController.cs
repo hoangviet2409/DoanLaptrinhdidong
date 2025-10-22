@@ -66,7 +66,7 @@ namespace UngDungDiemDanhNhanVien.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize] // Cho phép tất cả user đã đăng nhập
         public async Task<ActionResult<NhanVien>> CapNhatNhanVien(int id, NhanVien nhanVien)
         {
             var nhanVienCapNhat = await _nhanVienService.CapNhatNhanVien(id, nhanVien);

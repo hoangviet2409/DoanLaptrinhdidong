@@ -60,7 +60,7 @@ class DiemDanhDto {
     return DiemDanhDto(
       id: json['id'] ?? 0,
       nhanVienId: json['nhanVienId'] ?? 0,
-      hoTenNhanVien: json['hoTenNhanVien'] ?? '',
+      hoTenNhanVien: json['hoTen'] ?? json['hoTenNhanVien'] ?? '',
       maNhanVien: json['maNhanVien'] ?? '',
       gioVao: DateTime.parse(json['gioVao']),
       gioRa: json['gioRa'] != null ? DateTime.parse(json['gioRa']) : null,

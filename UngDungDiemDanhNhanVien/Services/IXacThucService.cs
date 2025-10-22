@@ -12,6 +12,9 @@ namespace UngDungDiemDanhNhanVien.Services
         // Đăng ký
         Task<DangKyResponse> DangKy(DangKyRequest request);
         
+        // Đổi mật khẩu
+        Task<bool> DoiMatKhau(int userId, DoiMatKhauRequest request);
+        
         // Utility
         string TaoJwtToken(string userId, string vaiTro, string hoTen, string? maNhanVien = null);
     }

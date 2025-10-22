@@ -23,6 +23,7 @@ UngDungDiemDanhNhanVien/*.cache
 UngDungDiemDanhNhanVien/*.log
 UngDungDiemDanhNhanVien/logs/
 UngDungDiemDanhNhanVien/appsettings.Development.json
+UngDungDiemDanhNhanVien/.vs/
 
 # Database
 *.db

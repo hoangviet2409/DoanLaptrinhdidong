@@ -2,13 +2,19 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/constants.dart';
 
 class ApiService {
+  static final ApiService _instance = ApiService._internal();
   late final Dio _dio;
   final Logger _logger = Logger();
 
-  ApiService() {
+  factory ApiService() {
+    return _instance;
+  }
+
+  ApiService._internal() {
     _dio = Dio(
       BaseOptions(
         baseUrl: AppConstants.baseUrl,
@@ -24,7 +30,14 @@ class ApiService {
     // Add interceptors
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
+          // Automatically add token from SharedPreferences
+          final prefs = await SharedPreferences.getInstance();
+          final token = prefs.getString('token');
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          
           _logger.d('REQUEST[${options.method}] => PATH: ${options.path}');
           _logger.d('REQUEST BODY: ${options.data}');
           _logger.d('REQUEST HEADERS: ${options.headers}');
@@ -154,4 +167,3 @@ class ApiService {
     }
   }
 }
-

@@ -87,5 +87,41 @@ namespace UngDungDiemDanhNhanVien.Controllers
             var result = await _xacThucService.DangKy(request);
             return Ok(result);
         }
+
+        [HttpPut("doi-mat-khau")]
+        [Authorize]
+        public async Task<ActionResult> DoiMatKhau(DoiMatKhauRequest request)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // Lấy userId từ claims
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                if (userIdClaim == null)
+                {
+                    return Unauthorized(new { thongBao = "Không thể xác định người dùng" });
+                }
+
+                var userId = int.Parse(userIdClaim.Value);
+                var result = await _xacThucService.DoiMatKhau(userId, request);
+
+                if (result)
+                {
+                    return Ok(new { thanhCong = true, thongBao = "Đổi mật khẩu thành công" });
+                }
+                else
+                {
+                    return BadRequest(new { thanhCong = false, thongBao = "Mật khẩu cũ không đúng" });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { thanhCong = false, thongBao = $"Lỗi server: {ex.Message}" });
+            }
+        }
     }
 }
