@@ -57,4 +57,19 @@ namespace UngDungDiemDanhNhanVien.DTOs
         [StringLength(500, ErrorMessage = "Ghi chú không được vượt quá 500 ký tự")]
         public string? GhiChu { get; set; }
     }
+
+    public class DiemDanhNfcRequest
+    {
+        [Required(ErrorMessage = "Mã thẻ NFC là bắt buộc")]
+        public string MaTheNfc { get; set; } = string.Empty;
+
+        [Range(-90, 90, ErrorMessage = "Vĩ độ không hợp lệ")]
+        public decimal? ViDo { get; set; }
+
+        [Range(-180, 180, ErrorMessage = "Kinh độ không hợp lệ")]
+        public decimal? KinhDo { get; set; }
+
+        [StringLength(500, ErrorMessage = "Ghi chú không được vượt quá 500 ký tự")]
+        public string? GhiChu { get; set; }
+    }
 }

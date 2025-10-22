@@ -17,5 +17,6 @@ namespace UngDungDiemDanhNhanVien.Services
         Task<AdminDashboardResponse> LayThongTinDashboardAdmin();
         Task<bool> CapNhatDiemDanh(int id, DiemDanh diemDanh);
         Task<bool> XoaDiemDanh(int id);
+        Task<DiemDanhResponse> DiemDanhNfc(DiemDanhNfcRequest request);
     }
 }

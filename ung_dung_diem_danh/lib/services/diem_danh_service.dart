@@ -45,6 +45,28 @@ class DiemDanhService {
     }
   }
 
+  /// Điểm danh bằng thẻ NFC (toggle vào/ra)
+  Future<DiemDanhResponse> diemDanhNfc({required String maTheNfc, double? viDo, double? kinhDo, String? ghiChu}) async {
+    try {
+      final response = await _apiService.post(
+        '/DiemDanh/diem-danh-nfc',
+        data: {
+          'maTheNfc': maTheNfc,
+          if (viDo != null) 'viDo': viDo,
+          if (kinhDo != null) 'kinhDo': kinhDo,
+          if (ghiChu != null) 'ghiChu': ghiChu,
+        },
+      );
+      if (response.statusCode == 200) {
+        return DiemDanhResponse.fromJson(response.data);
+      } else {
+        throw Exception('Lỗi khi điểm danh NFC: ${response.statusMessage}');
+      }
+    } catch (e) {
+      throw Exception('Lỗi kết nối khi điểm danh NFC: $e');
+    }
+  }
+
   /// Chấm công thủ công (Admin only)
   Future<DiemDanhResponse> chamCongThuCong(dynamic request) async {
     try {

@@ -94,6 +94,9 @@ class AdminService {
         'chucVu': request.chucVu,
         'luongGio': request.luongGio,
         'trangThai': 'HoatDong',
+        'maKhuonMat': null,
+        'maSinhTracHoc': null,
+        'maTheNfc': request.maTheNfc,
       };
       
       final response = await _apiService.post(

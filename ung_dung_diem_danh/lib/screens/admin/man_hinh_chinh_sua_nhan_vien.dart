@@ -3,6 +3,7 @@ import '../../config/theme.dart';
 import '../../models/nhan_vien_model.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/nfc_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ManHinhChinhSuaNhanVien extends StatefulWidget {
@@ -28,9 +29,12 @@ class _ManHinhChinhSuaNhanVienState extends State<ManHinhChinhSuaNhanVien> {
   final _luongGioController = TextEditingController();
   final _maSinhTracHocController = TextEditingController();
   final _maKhuonMatController = TextEditingController();
+  final _maTheNfcController = TextEditingController();
 
   String _selectedTrangThai = 'HoatDong';
   bool _isLoading = false;
+  bool _dangQuetNfc = false;
+  final _nfcService = NfcService();
 
   @override
   void initState() {
@@ -48,6 +52,7 @@ class _ManHinhChinhSuaNhanVienState extends State<ManHinhChinhSuaNhanVien> {
     _luongGioController.text = widget.nhanVien.luongGio.toString();
     _maSinhTracHocController.text = widget.nhanVien.maSinhTracHoc ?? '';
     _maKhuonMatController.text = widget.nhanVien.maKhuonMat ?? '';
+    _maTheNfcController.text = widget.nhanVien.maTheNfc ?? '';
     _selectedTrangThai = widget.nhanVien.trangThai;
   }
 
@@ -62,6 +67,7 @@ class _ManHinhChinhSuaNhanVienState extends State<ManHinhChinhSuaNhanVien> {
     _luongGioController.dispose();
     _maSinhTracHocController.dispose();
     _maKhuonMatController.dispose();
+    _maTheNfcController.dispose();
     super.dispose();
   }
 
@@ -267,6 +273,43 @@ class _ManHinhChinhSuaNhanVienState extends State<ManHinhChinhSuaNhanVien> {
                           helperText: 'Mã nhận diện khuôn mặt (tùy chọn)',
                         ),
                       ),
+                      const SizedBox(height: 16),
+
+                      // Mã thẻ NFC + nút quét
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _maTheNfcController,
+                              decoration: const InputDecoration(
+                                labelText: 'Mã Thẻ NFC',
+                                border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.nfc),
+                                helperText: 'Mã thẻ NFC để điểm danh (tùy chọn)',
+                              ),
+                              validator: (value) {
+                                if (value != null && value.isNotEmpty) {
+                                  if (!RegExp(r'^[0-9A-Fa-f]{8,16}$').hasMatch(value)) {
+                                    return 'Mã thẻ NFC phải là chuỗi hex 8-16 ký tự';
+                                  }
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            height: 48,
+                            child: OutlinedButton.icon(
+                              onPressed: _dangQuetNfc ? null : _quetTheNfc,
+                              icon: _dangQuetNfc
+                                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                                  : const Icon(Icons.sensors),
+                              label: Text(_dangQuetNfc ? 'Đưa thẻ gần...' : 'Quét thẻ'),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -353,6 +396,9 @@ class _ManHinhChinhSuaNhanVienState extends State<ManHinhChinhSuaNhanVien> {
         'MaKhuonMat': _maKhuonMatController.text.trim().isEmpty 
             ? null 
             : _maKhuonMatController.text.trim(),
+        'MaTheNfc': _maTheNfcController.text.trim().isEmpty 
+            ? null 
+            : _maTheNfcController.text.trim().toUpperCase(),
         'NgayTao': widget.nhanVien.ngayTao.toIso8601String(),
         'NgayCapNhat': DateTime.now().toIso8601String(),
       };
@@ -389,6 +435,42 @@ class _ManHinhChinhSuaNhanVienState extends State<ManHinhChinhSuaNhanVien> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _quetTheNfc() async {
+    setState(() { _dangQuetNfc = true; });
+    try {
+      final maThe = await _nfcService.readTagOnce();
+      if (maThe != null && mounted) {
+        _maTheNfcController.text = maThe.toUpperCase();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã đọc thẻ: $maThe'),
+            backgroundColor: AppTheme.successColor,
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Không đọc được thẻ NFC'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi NFC: ${e.toString()}'),
+            backgroundColor: AppTheme.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() { _dangQuetNfc = false; });
+      }
     }
   }
 }

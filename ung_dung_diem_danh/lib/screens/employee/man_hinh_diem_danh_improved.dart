@@ -10,6 +10,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/auth_manager.dart';
 import '../../services/diem_danh_service.dart';
+import '../../services/nfc_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ManHinhDiemDanhImproved extends StatefulWidget {
@@ -26,6 +27,8 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
   bool _isCheckingLocation = false;
   Position? _currentPosition;
   String? _errorMessage;
+  final _nfcService = NfcService();
+  bool _nfcDangDoc = false;
 
   @override
   void initState() {
@@ -33,6 +36,17 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
     _loadDiemDanhHienTai();
     _loadThongKe();
     _getCurrentLocation();
+    // Tự động bắt đầu quét NFC khi vào màn hình
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startAutoNfcScan();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Dừng quét NFC khi rời khỏi màn hình
+    _nfcService.stopNfc();
+    super.dispose();
   }
 
   Future<void> _loadDiemDanhHienTai() async {
@@ -272,6 +286,67 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
         duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  // Tự động bắt đầu quét NFC khi vào màn hình
+  Future<void> _startAutoNfcScan() async {
+    // Đợi một chút để màn hình load xong và dữ liệu được tải
+    await Future.delayed(const Duration(milliseconds: 2000));
+    
+    if (!mounted) return;
+    
+    // Chỉ tự động quét nếu chưa có điểm danh hôm nay
+    if (_diemDanhHienTai == null && !_nfcDangDoc) {
+      _showMessage('🔔 Tự động quét thẻ NFC để điểm danh...');
+      // Đợi thêm một chút để người dùng thấy thông báo
+      await Future.delayed(const Duration(milliseconds: 1000));
+      if (mounted && !_nfcDangDoc) {
+        _diemDanhQuaNfc();
+      }
+    }
+  }
+
+  Future<void> _diemDanhQuaNfc() async {
+    setState(() {
+      _nfcDangDoc = true;
+    });
+
+    try {
+      final maThe = await _nfcService.readTagOnce();
+      if (maThe == null) {
+        _showMessage('Không đọc được thẻ NFC. Vui lòng thử lại.', isError: true);
+        return;
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final apiService = ApiService();
+      final authService = AuthService(apiService, prefs);
+      final token = await authService.getCurrentToken();
+      if (token != null) apiService.setToken(token);
+
+      final diemDanhService = DiemDanhService(apiService);
+
+      final response = await diemDanhService.diemDanhNfc(
+        maTheNfc: maThe,
+        viDo: _currentPosition?.latitude,
+        kinhDo: _currentPosition?.longitude,
+        ghiChu: 'Điểm danh bằng thẻ NFC',
+      );
+
+      if (response.thanhCong) {
+        _showMessage(response.thongBao);
+        await _loadDiemDanhHienTai();
+      } else {
+        _showMessage(response.thongBao, isError: true);
+      }
+    } catch (e) {
+      _showMessage('Lỗi: ${e.toString()}', isError: true);
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _nfcDangDoc = false;
+      });
+    }
   }
 
   @override
@@ -780,6 +855,73 @@ class _ManHinhDiemDanhImprovedState extends State<ManHinhDiemDanhImproved> {
                   ],
                 ),
               ),
+
+            const SizedBox(height: 12),
+            // Hiển thị trạng thái quét NFC tự động
+            if (_diemDanhHienTai == null) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.nfc,
+                      size: 48,
+                      color: _nfcDangDoc ? Colors.blue : Colors.grey,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _nfcDangDoc ? 'Đang quét thẻ NFC...' : 'Đưa thẻ NFC gần điện thoại',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: _nfcDangDoc ? Colors.blue : Colors.grey.shade700,
+                      ),
+                    ),
+                    if (_nfcDangDoc) ...[
+                      const SizedBox(height: 8),
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _nfcDangDoc ? null : _diemDanhQuaNfc,
+                  icon: _nfcDangDoc
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.nfc),
+                  label: Text(_nfcDangDoc ? 'Đang quét...' : 'Quét lại thẻ NFC'),
+                ),
+              ),
+            ] else ...[
+              // Nếu đã điểm danh, hiển thị nút điểm danh ra
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _nfcDangDoc ? null : _diemDanhQuaNfc,
+                  icon: _nfcDangDoc
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.logout),
+                  label: Text(_nfcDangDoc ? 'Đang quét thẻ...' : 'Điểm danh ra bằng NFC'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

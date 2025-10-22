@@ -46,6 +46,19 @@ namespace UngDungDiemDanhNhanVien.Controllers
         }
 
         /// <summary>
+        /// Điểm danh bằng thẻ NFC (toggle vào/ra)
+        /// </summary>
+        [HttpPost("diem-danh-nfc")]
+        [AllowAnonymous]
+        public async Task<ActionResult<DiemDanhResponse>> DiemDanhNfc([FromBody] DiemDanhNfcRequest request)
+        {
+            var result = await _diemDanhService.DiemDanhNfc(request);
+            if (!result.ThanhCong)
+                return BadRequest(result);
+            return Ok(result);
+        }
+
+        /// <summary>
         /// Chấm công thủ công (chỉ Admin)
         /// </summary>
         [HttpPost("cham-cong-thu-cong")]

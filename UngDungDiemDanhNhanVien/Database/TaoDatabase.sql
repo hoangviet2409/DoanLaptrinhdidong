@@ -1,3 +1,10 @@
+-- Thêm cột mã thẻ NFC vào bảng Nhân Viên
+ALTER TABLE [dbo].[NhanVien]
+ADD [MaTheNfc] NVARCHAR(50) NULL;
+
+-- Tạo chỉ mục để tra cứu nhanh theo mã thẻ NFC
+CREATE INDEX IX_NhanVien_MaTheNfc ON [dbo].[NhanVien]([MaTheNfc]);
+
 -- Tạo database
 USE master;
 GO
