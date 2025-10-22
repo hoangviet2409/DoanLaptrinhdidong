@@ -41,6 +41,15 @@ dependencies:
   # Camera
   image_picker: ^1.0.7
   
+  # Image processing
+  image: ^4.1.7
+  
+  # NFC
+  nfc_manager: ^4.1.1
+  
+  # ML Kit Face Detection
+  google_mlkit_face_detection: ^0.13.1
+  
   # Permissions
   permission_handler: ^11.2.0
   

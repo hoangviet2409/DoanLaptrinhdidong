@@ -10,6 +10,9 @@ import '../../services/auth_manager.dart';
 import '../../models/diem_danh_response.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'man_hinh_luong.dart';
+import 'man_hinh_quet_nfc.dart';
+import 'man_hinh_diem_danh_sinh_trac.dart';
+import 'man_hinh_quet_khuon_mat.dart';
 
 class ManHinhChuNhanVienImproved extends StatefulWidget {
   final Function(int)? onNavigateToTab;
@@ -379,6 +382,81 @@ class _ManHinhChuNhanVienImprovedState extends State<ManHinhChuNhanVienImproved>
             ),
             const SizedBox(height: 16),
             _buildSmartCheckInButton(context),
+            const SizedBox(height: 12),
+            // Nút quét NFC
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ManHinhQuetNFC(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.nfc),
+                label: const Text('Điểm danh bằng thẻ NFC'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.primaryColor,
+                  side: BorderSide(color: AppTheme.primaryColor),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Nút sinh trắc học (vân tay/Face ID)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ManHinhDiemDanhSinhTrac(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.fingerprint),
+                label: const Text('Điểm danh bằng vân tay'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.green,
+                  side: const BorderSide(color: Colors.green),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Nút quét khuôn mặt
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ManHinhQuetKhuonMat(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.face),
+                label: const Text('Điểm danh bằng khuôn mặt'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.purple,
+                  side: const BorderSide(color: Colors.purple),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

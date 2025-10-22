@@ -56,5 +56,8 @@ namespace UngDungDiemDanhNhanVien.DTOs
 
         [StringLength(50, ErrorMessage = "Mã khuôn mặt không được quá 50 ký tự")]
         public string? MaKhuonMat { get; set; }
+
+        [StringLength(50, ErrorMessage = "Mã thẻ NFC không được quá 50 ký tự")]
+        public string? MaTheNFC { get; set; }
     }
 }

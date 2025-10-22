@@ -61,6 +61,7 @@ namespace UngDungDiemDanhNhanVien.Services
             nhanVienHienTai.TrangThai = nhanVien.TrangThai;
             nhanVienHienTai.MaSinhTracHoc = nhanVien.MaSinhTracHoc;
             nhanVienHienTai.MaKhuonMat = nhanVien.MaKhuonMat;
+            nhanVienHienTai.MaTheNFC = nhanVien.MaTheNFC;
             nhanVienHienTai.NgayCapNhat = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -97,6 +98,33 @@ namespace UngDungDiemDanhNhanVien.Services
             nhanVien.NgayCapNhat = DateTime.Now;
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<bool> CapNhatMaTheNFC(string maNhanVien, string maTheNFC)
+        {
+            var nhanVien = await _context.NhanVien
+                .FirstOrDefaultAsync(n => n.MaNhanVien == maNhanVien);
+            
+            if (nhanVien == null)
+                throw new Exception("Không tìm thấy nhân viên");
+
+            // Kiểm tra thẻ đã được gán cho nhân viên khác chưa
+            var existing = await _context.NhanVien
+                .FirstOrDefaultAsync(nv => nv.MaTheNFC == maTheNFC && nv.Id != nhanVien.Id);
+            
+            if (existing != null)
+                throw new Exception($"Thẻ NFC này đã được gán cho nhân viên {existing.HoTen}");
+
+            nhanVien.MaTheNFC = maTheNFC;
+            nhanVien.NgayCapNhat = DateTime.Now;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<NhanVien?> LayNhanVienTheoMaTheNFC(string maTheNFC)
+        {
+            return await _context.NhanVien
+                .FirstOrDefaultAsync(nv => nv.MaTheNFC == maTheNFC && nv.TrangThai == "HoatDong");
         }
     }
 }

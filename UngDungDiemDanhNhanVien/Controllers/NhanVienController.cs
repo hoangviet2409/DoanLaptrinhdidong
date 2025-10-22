@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using UngDungDiemDanhNhanVien.DTOs;
 using UngDungDiemDanhNhanVien.Models;
 using UngDungDiemDanhNhanVien.Services;
 
@@ -107,6 +108,64 @@ namespace UngDungDiemDanhNhanVien.Controllers
                 return NotFound("Không tìm thấy nhân viên");
 
             return Ok("Đăng ký sinh trắc học thành công");
+        }
+
+        // API cho NFC
+        [HttpPost("gan-the-nfc")]
+        [Authorize]
+        public async Task<ActionResult> GanTheNFC([FromBody] GanTheNFCRequest request)
+        {
+            try
+            {
+                await _nhanVienService.CapNhatMaTheNFC(request.MaNhanVien, request.MaTheNFC);
+                return Ok(new { thanhCong = true, thongBao = "Gán thẻ NFC thành công" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { thanhCong = false, thongBao = ex.Message });
+            }
+        }
+
+        [HttpGet("kiem-tra-the-nfc/{maTheNFC}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<KiemTraTheNFCResponse>> KiemTraTheNFC(string maTheNFC)
+        {
+            try
+            {
+                var nhanVien = await _nhanVienService.LayNhanVienTheoMaTheNFC(maTheNFC);
+                
+                if (nhanVien == null)
+                {
+                    return Ok(new KiemTraTheNFCResponse
+                    {
+                        ThanhCong = false,
+                        ThongBao = "Thẻ NFC không hợp lệ hoặc chưa được đăng ký"
+                    });
+                }
+
+                return Ok(new KiemTraTheNFCResponse
+                {
+                    ThanhCong = true,
+                    ThongBao = "Thẻ NFC hợp lệ",
+                    NhanVien = new NhanVienNFCInfo
+                    {
+                        Id = nhanVien.Id,
+                        MaNhanVien = nhanVien.MaNhanVien,
+                        HoTen = nhanVien.HoTen,
+                        Email = nhanVien.Email,
+                        PhongBan = nhanVien.PhongBan,
+                        ChucVu = nhanVien.ChucVu
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new KiemTraTheNFCResponse
+                {
+                    ThanhCong = false,
+                    ThongBao = $"Lỗi: {ex.Message}"
+                });
+            }
         }
     }
 }

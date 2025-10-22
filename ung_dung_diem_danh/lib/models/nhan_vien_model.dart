@@ -8,6 +8,7 @@ class NhanVienModel extends Equatable {
   final String? soDienThoai;
   final String? maSinhTracHoc;
   final String? maKhuonMat;
+  final String? maTheNFC;
   final String? phongBan;
   final String? chucVu;
   final double luongGio;
@@ -23,6 +24,7 @@ class NhanVienModel extends Equatable {
     this.soDienThoai,
     this.maSinhTracHoc,
     this.maKhuonMat,
+    this.maTheNFC,
     this.phongBan,
     this.chucVu,
     required this.luongGio,
@@ -40,6 +42,7 @@ class NhanVienModel extends Equatable {
       soDienThoai: json['soDienThoai'],
       maSinhTracHoc: json['maSinhTracHoc'],
       maKhuonMat: json['maKhuonMat'],
+      maTheNFC: json['maTheNFC'],
       phongBan: json['phongBan'],
       chucVu: json['chucVu'],
       luongGio: (json['luongGio'] ?? 0).toDouble(),
@@ -60,6 +63,7 @@ class NhanVienModel extends Equatable {
       'soDienThoai': soDienThoai,
       'maSinhTracHoc': maSinhTracHoc,
       'maKhuonMat': maKhuonMat,
+      'maTheNFC': maTheNFC,
       'phongBan': phongBan,
       'chucVu': chucVu,
       'luongGio': luongGio,
@@ -78,6 +82,7 @@ class NhanVienModel extends Equatable {
         soDienThoai,
         maSinhTracHoc,
         maKhuonMat,
+        maTheNFC,
         phongBan,
         chucVu,
         luongGio,

@@ -307,6 +307,7 @@ namespace UngDungDiemDanhNhanVien.Services
                 TrangThai = request.TrangThai,
                 MaSinhTracHoc = request.MaSinhTracHoc,
                 MaKhuonMat = request.MaKhuonMat,
+                MaTheNFC = request.MaTheNFC,
                 NgayTao = DateTime.Now
             };
 
